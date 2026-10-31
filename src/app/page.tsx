@@ -1,32 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
-  Mail,
   Share2,
-  ExternalLink,
-  Heart,
-  Sparkles,
-  Code2,
-  Check,
-  GraduationCap,
-  FolderGit2,
-  BadgeCheck,
   QrCode,
-  MapPin,
+  ChevronRight,
+  Copy,
   Coffee,
-  Sun,
-  Moon,
-  Laptop,
-  Layers,
-  ArrowUpRight,
-  Terminal,
+  Heart,
+  GraduationCap,
   Send,
-  Play,
-  Pause,
-  Volume2,
-  Eye,
-  X,
+  Check,
+  Laptop,
+  BookOpen,
   MessageCircle,
 } from "lucide-react";
 
@@ -42,135 +28,168 @@ function GithubIcon({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
-interface LinkItem {
-  id: string;
-  title: string;
-  description: string;
-  url: string;
-  icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
-  badgeColor?: string;
-  isExternal?: boolean;
-  highlight?: boolean;
+// CUTE VECTOR CHARACTER AVATARS (사진의 턱 괴고 있는 시그니처 포즈 & 디테일 반영)
+function CuteCharacterAvatar({ type }: { type: "student" | "cat" | "chick" }) {
+  if (type === "cat") {
+    return (
+      <svg viewBox="0 0 120 120" className="w-full h-full" fill="none">
+        <circle cx="60" cy="60" r="58" fill="#FFF2F5" />
+        <polygon points="32,25 45,50 22,46" fill="#FFAAA6" />
+        <polygon points="30,30 40,48 24,45" fill="#FF8E88" />
+        <polygon points="88,25 75,50 98,46" fill="#FFAAA6" />
+        <polygon points="90,30 80,48 96,45" fill="#FF8E88" />
+        <ellipse cx="60" cy="64" rx="38" ry="32" fill="#FFFFFF" />
+        <circle cx="36" cy="68" r="7" fill="#FFD1D8" opacity="0.8" />
+        <circle cx="84" cy="68" r="7" fill="#FFD1D8" opacity="0.8" />
+        <ellipse cx="45" cy="62" rx="4.5" ry="5.5" fill="#191F28" />
+        <circle cx="47" cy="60" r="2" fill="#FFFFFF" />
+        <ellipse cx="75" cy="62" rx="4.5" ry="5.5" fill="#191F28" />
+        <circle cx="77" cy="60" r="2" fill="#FFFFFF" />
+        <polygon points="58,68 62,68 60,71" fill="#FF8E88" />
+        <path d="M55,73 Q60,77 65,73" stroke="#191F28" strokeWidth="2" strokeLinecap="round" />
+        <line x1="20" y1="64" x2="32" y2="66" stroke="#D1D6DB" strokeWidth="2" strokeLinecap="round" />
+        <line x1="20" y1="72" x2="32" y2="70" stroke="#D1D6DB" strokeWidth="2" strokeLinecap="round" />
+        <line x1="100" y1="64" x2="88" y2="66" stroke="#D1D6DB" strokeWidth="2" strokeLinecap="round" />
+        <line x1="100" y1="72" x2="88" y2="70" stroke="#D1D6DB" strokeWidth="2" strokeLinecap="round" />
+        <path d="M26,58 C26,34 94,34 94,58" stroke="#3182F6" strokeWidth="6" strokeLinecap="round" />
+        <rect x="22" y="52" width="8" height="16" rx="4" fill="#3182F6" />
+        <rect x="90" y="52" width="8" height="16" rx="4" fill="#3182F6" />
+        <path d="M60,32 Q62,22 68,24 Q68,28 62,32" fill="#2B9D5B" />
+      </svg>
+    );
+  }
+
+  if (type === "chick") {
+    return (
+      <svg viewBox="0 0 120 120" className="w-full h-full" fill="none">
+        <circle cx="60" cy="60" r="58" fill="#FFF9E6" />
+        <circle cx="60" cy="65" r="36" fill="#FFDC60" />
+        <circle cx="38" cy="70" r="6" fill="#FFA5A5" opacity="0.8" />
+        <circle cx="82" cy="70" r="6" fill="#FFA5A5" opacity="0.8" />
+        <circle cx="46" cy="62" r="4.5" fill="#191F28" />
+        <circle cx="48" cy="60" r="1.5" fill="#FFFFFF" />
+        <circle cx="74" cy="62" r="4.5" fill="#191F28" />
+        <circle cx="76" cy="60" r="1.5" fill="#FFFFFF" />
+        <ellipse cx="60" cy="68" rx="6" ry="4" fill="#FF8A00" />
+        <path d="M60,30 C55,20 65,16 66,24 C66,27 62,29 60,30 Z" fill="#2B9D5B" />
+        <circle cx="46" cy="62" r="12" stroke="#3182F6" strokeWidth="3" fill="none" />
+        <circle cx="74" cy="62" r="12" stroke="#3182F6" strokeWidth="3" fill="none" />
+        <line x1="58" y1="62" x2="62" y2="62" stroke="#3182F6" strokeWidth="3" />
+      </svg>
+    );
+  }
+
+  // CUSTOM YEHYUN CHARACTER (실제 사진의 긴 흑발 5:5 가르마 + 턱 괴기 포즈 + 스프링 머리끈 팔찌 반영된 캐릭터 아바타)
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/images/avatar.svg"
+      alt="김예현 캐릭터 아바타"
+      className="w-full h-full object-cover"
+    />
+  );
 }
 
-const LINKS: LinkItem[] = [
+interface LinkRowItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  badge?: string;
+  url: string;
+  iconBg: string;
+  iconColor: string;
+  icon: React.ComponentType<{ className?: string }>;
+  isExternal?: boolean;
+}
+
+const LINKS: LinkRowItem[] = [
   {
     id: "github",
-    title: "GitHub 프로필",
-    description: "진행 중인 토이 프로젝트와 오픈소스 기여 내역",
-    url: "https://github.com/elixkim404",
-    icon: GithubIcon,
+    title: "깃허브 저장소",
+    subtitle: "1학년 동안 차근차근 쌓아갈 과제와 토이 프로젝트예요",
     badge: "Active",
-    badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    url: "https://github.com/elixkim404",
+    iconBg: "bg-[#F2F4F6]",
+    iconColor: "text-[#191F28]",
+    icon: GithubIcon,
     isExternal: true,
   },
   {
     id: "mylink",
-    title: "마이링크 (MyLink) 레포지토리",
-    description: "Next.js 16 & Tailwind 기반 링크트리 서비스",
-    url: "https://github.com/elixkim404/mylink",
-    icon: FolderGit2,
+    title: "마이링크 (MyLink)",
+    subtitle: "새내기의 첫 웹 프로젝트, 토스 디자인 시스템(TDS)으로 만든 링크트리",
     badge: "Featured",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
+    url: "https://github.com/elixkim404/mylink",
+    iconBg: "bg-[#E8F3FF]",
+    iconColor: "text-[#3182F6]",
+    icon: Laptop,
     isExternal: true,
-    highlight: true,
   },
   {
-    id: "vibecoding",
-    title: "바이브코딩 학습 기록",
-    description: "AI 페어 프로그래밍과 실전 빌드 아카이빙",
-    url: "https://github.com/elixkim404",
-    icon: Code2,
+    id: "study",
+    title: "새내기 개발 & 공부 일지",
+    subtitle: "C언어, 파이썬, 웹 기초 수업과 스터디 내용을 기록해요",
     badge: "Study",
-    badgeColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    url: "https://github.com/elixkim404",
+    iconBg: "bg-[#E8F3FF]",
+    iconColor: "text-[#3182F6]",
+    icon: BookOpen,
     isExternal: true,
   },
   {
-    id: "contact",
-    title: "이메일 문의 & 커피챗",
-    description: "아이디어 교류나 협업 제안은 언제든 환영합니다",
-    url: "mailto:294705559+elixkim404@users.noreply.github.com",
-    icon: Mail,
+    id: "coffee",
+    title: "커피챗 & 선배님 조언 신청",
+    subtitle: "선배님들의 꿀팁이나 동기들과의 스터디 이야기, 언제든 환영해요!",
     badge: "Coffee Chat",
-    badgeColor: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+    url: "mailto:294705559+elixkim404@users.noreply.github.com",
+    iconBg: "bg-[#FFF4E5]",
+    iconColor: "text-[#FF8A00]",
+    icon: Coffee,
     isExternal: false,
   },
 ];
 
-const TECH_STACK = [
-  { name: "Next.js 16", category: "Framework", color: "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900" },
-  { name: "React 19", category: "Library", color: "bg-sky-500/15 text-sky-600 dark:text-sky-300 border-sky-400/30" },
-  { name: "TypeScript", category: "Language", color: "bg-blue-500/15 text-blue-600 dark:text-blue-300 border-blue-400/30" },
-  { name: "Tailwind CSS", category: "Styling", color: "bg-teal-500/15 text-teal-600 dark:text-teal-300 border-teal-400/30" },
-  { name: "Vibe Coding", category: "Philosophy", color: "bg-purple-500/15 text-purple-600 dark:text-purple-300 border-purple-400/30" },
-  { name: "AI Pair Coding", category: "Tool", color: "bg-rose-500/15 text-rose-600 dark:text-rose-300 border-rose-400/30" },
-];
-
-interface GuestMessage {
+interface CheerMessage {
   id: string;
-  name: string;
-  message: string;
+  author: string;
+  content: string;
   time: string;
-  emoji: string;
 }
 
-const DEFAULT_MESSAGES: GuestMessage[] = [
+const DEFAULT_CHEERS: CheerMessage[] = [
   {
     id: "1",
-    name: "익명의 러너",
-    message: "바이브코딩으로 만든 마이링크 페이지 디자인 깔끔하고 멋져요! ✨",
-    time: "방금 전",
-    emoji: "🔥",
+    author: "컴공과 선배",
+    content: "예현아 1학년 때부터 이렇게 깃허브랑 웹 만들어두는 거 훌륭하다! 파이팅 🍀",
+    time: "20분 전",
   },
   {
     id: "2",
-    name: "동료 빌더",
-    message: "앞으로의 프로젝트들도 기대하고 응원하겠습니다 ☕",
+    author: "새내기 동기",
+    content: "캐릭터 너무 귀엽고 예현이랑 완전 똑닮았어! 우리 다음 주 과제 같이 하자 ☕",
     time: "1시간 전",
-    emoji: "🚀",
   },
 ];
 
 export default function Home() {
-  const [copied, setCopied] = useState(false);
-  const [likes, setLikes] = useState(42);
-  const [hasLiked, setHasLiked] = useState(false);
-  const [flyingHearts, setFlyingHearts] = useState<{ id: number; left: number }[]>([]);
-  const [activeTab, setActiveTab] = useState<"links" | "about">("links");
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [cheerCount, setCheerCount] = useState(168);
+  const [hasCheered, setHasCheered] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
-  const [isPlayingMusic, setIsPlayingMusic] = useState(true);
 
-  // Guestbook state
-  const [messages, setMessages] = useState<GuestMessage[]>(DEFAULT_MESSAGES);
-  const [newMessage, setNewMessage] = useState("");
-  const [guestName, setGuestName] = useState("");
+  // Avatar mode: "student" (예현 맞춤 캐릭터) or "cat" or "chick"
+  const [avatarMode, setAvatarMode] = useState<"student" | "cat" | "chick">("student");
 
-  // Dark mode hook
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const applyTheme = () => {
-      const saved = localStorage.getItem("theme");
-      const isDark = saved ? saved === "dark" : mediaQuery.matches;
-      document.documentElement.classList.toggle("dark", isDark);
-      setIsDarkMode(isDark);
-    };
+  // Cheer notes state
+  const [cheers, setCheers] = useState<CheerMessage[]>(DEFAULT_CHEERS);
+  const [authorInput, setAuthorInput] = useState("");
+  const [contentInput, setContentInput] = useState("");
 
-    const timer = setTimeout(applyTheme, 0);
-    mediaQuery.addEventListener("change", applyTheme);
-
-    return () => {
-      clearTimeout(timer);
-      mediaQuery.removeEventListener("change", applyTheme);
-    };
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextDark = !isDarkMode;
-    setIsDarkMode(nextDark);
-    document.documentElement.classList.toggle("dark", nextDark);
-    localStorage.setItem("theme", nextDark ? "dark" : "light");
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 2400);
   };
 
   const handleShare = async () => {
@@ -178,331 +197,229 @@ export default function Home() {
       if (typeof window !== "undefined") {
         if (navigator.share) {
           await navigator.share({
-            title: "김예현 (elixkim404) | MyLink",
-            text: "바이브코딩으로 아이디어를 현실로 만드는 대학생 개발자 김예현의 프로필",
+            title: "김예현의 마이링크",
+            text: "컴퓨터공학과 1학년 새내기 김예현의 프로필이에요 🐣",
             url: window.location.href,
           });
         } else {
           await navigator.clipboard.writeText(window.location.href);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2500);
+          showToast("링크가 클립보드에 복사되었어요");
         }
       }
     } catch {
-      // User cancelled or unsupported
+      // User cancelled
     }
   };
 
-  const handleLike = () => {
-    if (!hasLiked) {
-      setLikes((prev) => prev + 1);
-      setHasLiked(true);
-      // Spawn flying heart particles
-      const newHeart = { id: Date.now(), left: Math.random() * 40 - 20 };
-      setFlyingHearts((prev) => [...prev, newHeart]);
-      setTimeout(() => {
-        setFlyingHearts((prev) => prev.filter((h) => h.id !== newHeart.id));
-      }, 1200);
+  const handleCopyHandle = async () => {
+    if (typeof window !== "undefined") {
+      await navigator.clipboard.writeText("@elixkim404");
+      showToast("아이디가 복사되었어요");
+    }
+  };
+
+  const handleCheerHeart = () => {
+    if (!hasCheered) {
+      setCheerCount((prev) => prev + 1);
+      setHasCheered(true);
+      showToast("예현이에게 새내기 응원을 보냈어요 ❤️");
     } else {
-      setLikes((prev) => prev - 1);
-      setHasLiked(false);
+      setCheerCount((prev) => prev - 1);
+      setHasCheered(false);
     }
   };
 
   const handleAddCheer = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!contentInput.trim()) return;
 
-    const emojis = ["✨", "🔥", "🚀", "☕", "👏", "💖", "🎉"];
-    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-
-    const entry: GuestMessage = {
+    const newEntry: CheerMessage = {
       id: Date.now().toString(),
-      name: guestName.trim() || "익명의 응원자",
-      message: newMessage.trim(),
+      author: authorInput.trim() || "익명의 학우",
+      content: contentInput.trim(),
       time: "방금 전",
-      emoji: randomEmoji,
     };
 
-    setMessages([entry, ...messages]);
-    setNewMessage("");
+    setCheers([newEntry, ...cheers]);
+    setContentInput("");
+    showToast("응원 메시지가 등록되었어요 ✨");
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-between px-4 py-8 md:py-14 selection:bg-indigo-500 selection:text-white">
-      {/* Ambient Animated Blurred Orbs Background */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        {/* Subtle dot pattern */}
-        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] [background-image:radial-gradient(#000_1px,transparent_1px)] dark:[background-image:radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
+    <div className="min-h-screen bg-[#F2F4F6] text-[#191F28] flex flex-col items-center pb-28">
+      {/* TDS TOAST NOTIFICATION */}
+      {toastMessage && (
+        <div className="fixed top-5 z-50 animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="bg-[#191F28] text-white px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-[14px] font-medium">
+            <span className="w-4 h-4 rounded-full bg-[#2B9D5B] flex items-center justify-center text-white shrink-0">
+              <Check className="w-2.5 h-2.5 stroke-[3]" />
+            </span>
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
 
-        {/* Floating gradient orbs */}
-        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-gradient-to-tr from-indigo-500/25 to-purple-500/20 blur-3xl animate-float-slow" />
-        <div className="absolute top-1/4 -right-32 w-[28rem] h-[28rem] rounded-full bg-gradient-to-bl from-pink-500/20 to-sky-500/20 blur-3xl animate-float-reverse" />
-        <div className="absolute bottom-10 left-1/3 w-80 h-80 rounded-full bg-gradient-to-t from-violet-500/15 to-amber-500/15 blur-3xl animate-float-slow" />
-      </div>
-
-      {/* Top utility bar */}
-      <header className="w-full max-w-xl flex items-center justify-between gap-2 mb-6">
+      {/* TOP NAVIGATION BAR (56px) */}
+      <header className="sticky top-0 z-30 w-full max-w-lg bg-[#F2F4F6]/90 backdrop-blur-md px-5 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50/80 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/50 backdrop-blur-md shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping inline-block" />
-            <span className="w-2 h-2 rounded-full bg-indigo-500 absolute inline-block" />
-            <span className="ml-1">MyLink v1.0</span>
+          <span className="font-bold text-[18px] text-[#191F28] tracking-tight">
+            마이링크
+          </span>
+          <span className="text-[12px] font-semibold text-[#3182F6] bg-[#E8F3FF] px-2 py-0.5 rounded-full">
+            예현 🐣
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* QR Code trigger */}
           <button
             onClick={() => setShowQrModal(true)}
-            className="p-2 rounded-full glass-card hover:scale-105 active:scale-95 transition-all text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white cursor-pointer shadow-xs"
-            title="QR 코드로 열기"
-            aria-label="QR 코드 보기"
+            className="w-9 h-9 rounded-full bg-white hover:bg-[#E5E8EB] flex items-center justify-center text-[#4E5968] transition-colors cursor-pointer shadow-xs"
+            title="QR 코드 보기"
           >
             <QrCode className="w-4 h-4" />
           </button>
 
-          {/* Theme toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full glass-card hover:scale-105 active:scale-95 transition-all text-zinc-600 dark:text-zinc-300 hover:text-amber-500 dark:hover:text-amber-400 cursor-pointer shadow-xs"
-            title={isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환"}
-            aria-label="테마 전환"
-          >
-            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-
-          {/* Share button */}
           <button
             onClick={handleShare}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium rounded-full glass-card hover:border-indigo-400/60 dark:hover:border-indigo-500/60 hover:scale-102 active:scale-98 transition-all cursor-pointer shadow-xs"
-            title="프로필 링크 복사 및 공유"
+            className="w-9 h-9 rounded-full bg-white hover:bg-[#E5E8EB] flex items-center justify-center text-[#4E5968] transition-colors cursor-pointer shadow-xs"
+            title="프로필 공유하기"
           >
-            {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">복사됨!</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-300" />
-                <span className="text-zinc-700 dark:text-zinc-200">공유</span>
-              </>
-            )}
+            <Share2 className="w-4 h-4" />
           </button>
         </div>
       </header>
 
-      {/* Main Profile Container */}
-      <main className="w-full max-w-xl flex flex-col items-center text-center">
-        {/* Profile Card Box */}
-        <section className="w-full p-6 sm:p-8 rounded-3xl glass-card shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_16px_50px_rgba(0,0,0,0.35)] relative overflow-hidden transition-all duration-300">
-          {/* Subtle gradient banner line at top of card */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+      {/* MAIN CONTAINER (Single Column Mobile-First, max-w-lg) */}
+      <main className="w-full max-w-lg px-4 pt-2 flex flex-col gap-3">
+        {/* CARD 1: PROFILE HERO CARD */}
+        <section className="tds-card p-6 flex flex-col items-start relative overflow-hidden">
+          {/* Avatar and Style Switcher */}
+          <div className="flex items-center justify-between w-full mb-4">
+            <div className="flex items-center gap-3">
+              {/* Profile Avatar Circle (사진 속 얼굴과 특징을 본뜬 캐릭터) */}
+              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white shadow-sm bg-white shrink-0 hover:scale-105 transition-transform relative">
+                <CuteCharacterAvatar type={avatarMode} />
+              </div>
 
-          {/* Avatar with Glow and Pulse Ring */}
-          <div className="relative mx-auto w-28 h-28 sm:w-32 sm:h-32 mb-5 group">
-            {/* Ambient glow behind avatar */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 blur-md opacity-40 group-hover:opacity-75 transition-opacity duration-300" />
-
-            <div className="relative w-full h-full rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[3.5px] shadow-xl transition-transform duration-300 group-hover:scale-105">
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-indigo-50 to-white dark:from-zinc-900 dark:to-zinc-950 flex flex-col items-center justify-center overflow-hidden border border-white/40 dark:border-zinc-800">
-                <span className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent select-none tracking-tight">
-                  예현
-                </span>
-                <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 -mt-0.5 tracking-wider uppercase">
-                  Builder
-                </span>
+              {/* Mode Switcher Buttons */}
+              <div className="flex flex-col gap-1 text-left">
+                <span className="text-[11px] font-medium text-[#8B95A1]">프로필 캐릭터 선택</span>
+                <div className="flex flex-wrap gap-1">
+                  <button
+                    onClick={() => {
+                      setAvatarMode("student");
+                      showToast("예현 맞춤 캐릭터로 바꿨어요 👩‍💻");
+                    }}
+                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                      avatarMode === "student"
+                        ? "bg-[#3182F6] text-white"
+                        : "bg-[#F2F4F6] text-[#4E5968] hover:bg-[#E5E8EB]"
+                    }`}
+                  >
+                    예현 캐릭터 👩‍💻
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAvatarMode("cat");
+                      showToast("코딩냥이로 바꿨어요 🐱");
+                    }}
+                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                      avatarMode === "cat"
+                        ? "bg-[#3182F6] text-white"
+                        : "bg-[#F2F4F6] text-[#4E5968] hover:bg-[#E5E8EB]"
+                    }`}
+                  >
+                    코딩냥 🐱
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAvatarMode("chick");
+                      showToast("새내기 병아리로 바꿨어요 🐣");
+                    }}
+                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                      avatarMode === "chick"
+                        ? "bg-[#3182F6] text-white"
+                        : "bg-[#F2F4F6] text-[#4E5968] hover:bg-[#E5E8EB]"
+                    }`}
+                  >
+                    새내기 병아리 🐣
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Status Indicator Badge */}
-            <div
-              className="absolute bottom-1 right-1 inline-flex items-center gap-1.5 bg-emerald-500 text-white text-[11px] font-medium px-2.5 py-0.5 rounded-full border-2 border-white dark:border-zinc-900 shadow-md"
-              title="현재 바이브코딩 탐구 및 빌딩 중"
+            {/* Heart Cheer Pill */}
+            <button
+              onClick={handleCheerHeart}
+              className={`h-9 px-3.5 rounded-full flex items-center gap-1.5 text-[13px] font-semibold transition-all cursor-pointer shrink-0 ${
+                hasCheered
+                  ? "bg-[#FFF0F2] text-[#F04452]"
+                  : "bg-[#F2F4F6] text-[#4E5968] hover:bg-[#E5E8EB]"
+              }`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              <span>Vibe Coding</span>
-            </div>
+              <Heart
+                className={`w-4 h-4 transition-transform ${
+                  hasCheered ? "fill-[#F04452] text-[#F04452] scale-110" : "text-[#4E5968]"
+                }`}
+              />
+              <span className="tabular-nums">{cheerCount}</span>
+            </button>
           </div>
 
-          {/* Name & Verified Badge */}
-          <div className="flex items-center justify-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
+          {/* Name & Handle */}
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-[24px] font-bold text-[#191F28] tracking-tight">
               김예현
             </h1>
-            <span title="공식 인증 프로필">
-              <BadgeCheck className="w-6 h-6 text-indigo-500 fill-indigo-500/20" />
+            <span className="w-5 h-5 rounded-full bg-[#3182F6] flex items-center justify-center text-white" title="인증된 프로필">
+              <Check className="w-3 h-3 stroke-[3]" />
             </span>
-            <Sparkles className="w-5 h-5 text-amber-500 fill-amber-400/40" />
+            <span className="text-[12px] font-bold text-[#2B9D5B] bg-[#E8F8F0] px-2 py-0.5 rounded-full">
+              새내기 1학년
+            </span>
           </div>
 
-          {/* Handle */}
-          <div className="mt-1 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium text-indigo-600 dark:text-indigo-400">
+          <button
+            onClick={handleCopyHandle}
+            className="flex items-center gap-1 text-[14px] font-medium text-[#8B95A1] hover:text-[#3182F6] transition-colors mb-3.5 cursor-pointer"
+          >
             <span>@elixkim404</span>
-            <span className="text-zinc-300 dark:text-zinc-700">·</span>
-            <span className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" />
-              Seoul, KR
-            </span>
-          </div>
+            <Copy className="w-3 h-3" />
+          </button>
 
-          {/* Bio statement */}
-          <p className="mt-4 text-sm sm:text-base text-zinc-700 dark:text-zinc-300 font-normal leading-relaxed max-w-md mx-auto">
-            바이브코딩으로 아이디어를 현실로 구현하는 대학생 빌더입니다. <br className="hidden sm:inline" />
-            AI와 페어 프로그래밍하며 유용한 서비스를 만들고 배웁니다.
+          {/* Fresh 1st-Year CS Major Bio (해요체) */}
+          <p className="text-[15px] text-[#4E5968] leading-relaxed mb-4 text-left">
+            안녕하세요! 코딩이 마냥 신기하고 재밌는 컴퓨터공학과 1학년 새내기 예현이에요 🐣 <br />
+            기초 프로그래밍부터 차근차근 시작해서, 사람들에게 유용한 웹 서비스를 직접 만들어보는 멋진 개발자가 되는 게 꿈이에요 🫧
           </p>
 
-          {/* Identity Tag Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
-            <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/40 font-medium">
+          {/* Freshman Tag Badges */}
+          <div className="flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#3182F6] bg-[#E8F3FF] px-2.5 py-1 rounded-full">
               <GraduationCap className="w-3.5 h-3.5" />
-              대학생 개발자
+              컴공과 1학년 새내기
             </span>
-            <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/50 dark:border-purple-800/40 font-medium">
-              <Sparkles className="w-3.5 h-3.5" />
-              바이브코딩
+            <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#2B9D5B] bg-[#E8F8F0] px-2.5 py-1 rounded-full">
+              🌱 프론트엔드 새싹
             </span>
-            <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40 font-medium">
-              <Coffee className="w-3.5 h-3.5" />
-              커피챗 환영
+            <span className="inline-flex items-center gap-1 text-[13px] font-medium text-[#4E5968] bg-[#F2F4F6] px-2.5 py-1 rounded-full">
+              선배님 &amp; 동기 커피챗 환영 ☕
             </span>
-            <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40 font-medium">
-              <Laptop className="w-3.5 h-3.5" />
-              Web & AI
-            </span>
-          </div>
-
-          {/* Action & Stats Row */}
-          <div className="flex items-center justify-center gap-3 mt-6 pt-5 border-t border-zinc-200/60 dark:border-zinc-800/80">
-            {/* GitHub button */}
-            <a
-              href="https://github.com/elixkim404"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full glass-card flex items-center justify-center text-zinc-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 active:scale-95 transition-all shadow-xs"
-              aria-label="GitHub 프로필 방문"
-              title="GitHub 바로가기"
-            >
-              <GithubIcon className="w-4 h-4" />
-            </a>
-
-            {/* Email button */}
-            <a
-              href="mailto:294705559+elixkim404@users.noreply.github.com"
-              className="w-10 h-10 rounded-full glass-card flex items-center justify-center text-zinc-700 dark:text-zinc-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 active:scale-95 transition-all shadow-xs"
-              aria-label="이메일 문의"
-              title="이메일 보내기"
-            >
-              <Mail className="w-4 h-4" />
-            </a>
-
-            {/* Like cheer button with flying heart animation */}
-            <div className="relative">
-              <button
-                onClick={handleLike}
-                className={`h-10 px-4 rounded-full border flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 ${
-                  hasLiked
-                    ? "bg-rose-500 text-white border-rose-500 shadow-rose-500/25 scale-105"
-                    : "glass-card text-zinc-700 dark:text-zinc-200 hover:border-rose-300 dark:hover:border-rose-800"
-                }`}
-                title="프로필 응원하기 (클릭해 보세요!)"
-              >
-                <Heart
-                  className={`w-4 h-4 transition-transform ${
-                    hasLiked ? "fill-white text-white scale-110" : "text-rose-500"
-                  }`}
-                />
-                <span>응원 {likes}</span>
-              </button>
-
-              {/* Floating Hearts */}
-              {flyingHearts.map((h) => (
-                <div
-                  key={h.id}
-                  style={{ left: `calc(50% + ${h.left}px)` }}
-                  className="pointer-events-none absolute -top-4 -translate-x-1/2 text-rose-500 animate-fly-heart z-30"
-                >
-                  <Heart className="w-5 h-5 fill-rose-500" />
-                </div>
-              ))}
-            </div>
-
-            {/* Visitor counter preview */}
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full glass-card text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-              <Eye className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Today 148</span>
-            </div>
           </div>
         </section>
 
-        {/* Tab Switcher */}
-        <div className="w-full mt-6 p-1 rounded-2xl glass-card flex items-center justify-center gap-1 shadow-xs">
-          <button
-            onClick={() => setActiveTab("links")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === "links"
-                ? "bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-sm"
-                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            <span>주요 링크 & 프로젝트</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("about")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === "about"
-                ? "bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-sm"
-                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-            }`}
-          >
-            <Terminal className="w-4 h-4" />
-            <span>소개 & 기술 스택</span>
-          </button>
-        </div>
+        {/* CARD 2: OFFICIAL LINKS LIST (TDS ListRow pattern) */}
+        <section className="tds-card overflow-hidden">
+          <div className="px-5 pt-5 pb-2 text-left">
+            <h2 className="text-[18px] font-bold text-[#191F28] tracking-tight">
+              예현의 활동 &amp; 저장소
+            </h2>
+            <p className="text-[13px] text-[#8B95A1] mt-0.5">
+              관심 있는 항목을 누르면 바로 둘러보실 수 있어요
+            </p>
+          </div>
 
-        {/* TAB 1: LINKS & PROJECTS */}
-        {activeTab === "links" && (
-          <div className="w-full mt-5 flex flex-col gap-3.5 transition-all">
-            {/* Featured Highlight Card */}
-            <div className="w-full p-5 rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white shadow-lg shadow-indigo-600/20 text-left relative overflow-hidden group">
-              {/* Background ambient shine */}
-              <div className="absolute -right-12 -bottom-12 w-44 h-44 rounded-full bg-white/10 blur-2xl group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
-
-              <div className="flex items-center justify-between mb-2">
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 uppercase tracking-wide">
-                  <Sparkles className="w-3 h-3 text-amber-300" />
-                  Featured Project
-                </span>
-                <span className="text-[11px] text-indigo-200 font-mono">Next.js 16 + Tailwind</span>
-              </div>
-
-              <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-1.5">
-                마이링크 (MyLink)
-              </h2>
-              <p className="text-xs text-indigo-100/90 mt-1 leading-relaxed">
-                바이브코딩으로 직접 설계하고 개발한 나만의 고감도 링크인바이오(Link-in-bio) 서비스입니다.
-              </p>
-
-              <div className="mt-4 flex items-center justify-between pt-3 border-t border-white/15">
-                <div className="flex items-center gap-1.5 text-[11px] text-indigo-200">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Turbopack & TypeScript</span>
-                </div>
-                <a
-                  href="https://github.com/elixkim404/mylink"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-indigo-900 font-semibold text-xs hover:bg-indigo-50 transition-all shadow-sm group-hover:translate-x-0.5"
-                >
-                  <span>코드 보기</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </a>
-              </div>
-            </div>
-
-            {/* Link List */}
+          <div className="divide-y divide-[#E5E8EB]">
             {LINKS.map((link) => {
               const Icon = link.icon;
               return (
@@ -511,278 +428,236 @@ export default function Home() {
                   href={link.url}
                   target={link.isExternal ? "_blank" : undefined}
                   rel={link.isExternal ? "noopener noreferrer" : undefined}
-                  className="group relative flex items-center justify-between p-4 rounded-2xl glass-card hover:border-indigo-400/80 dark:hover:border-indigo-500/80 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                  className="tds-pressable flex items-center justify-between px-5 py-4 cursor-pointer group"
                 >
-                  <div className="flex items-center gap-3.5 text-left min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/20 group-hover:scale-108 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-200">
+                  <div className="flex items-center gap-3.5 min-w-0 text-left">
+                    <div
+                      className={`w-11 h-11 rounded-[14px] ${link.iconBg} ${link.iconColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}
+                    >
                       <Icon className="w-5 h-5" />
                     </div>
 
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-zinc-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="text-[16px] font-semibold text-[#191F28] truncate group-hover:text-[#3182F6] transition-colors">
                           {link.title}
                         </h3>
                         {link.badge && (
-                          <span
-                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-                              link.badgeColor || "bg-indigo-50 text-indigo-600 border-indigo-200"
-                            }`}
-                          >
+                          <span className="text-[11px] font-semibold text-[#3182F6] bg-[#E8F3FF] px-1.5 py-0.2 rounded-[4px]">
                             {link.badge}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
-                        {link.description}
+                      <p className="text-[13px] text-[#8B95A1] truncate mt-0.5">
+                        {link.subtitle}
                       </p>
                     </div>
                   </div>
 
-                  <div className="text-zinc-400 dark:text-zinc-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all group-hover:translate-x-1 shrink-0 pl-2">
-                    {link.isExternal ? (
-                      <ArrowUpRight className="w-4 h-4" />
-                    ) : (
-                      <ExternalLink className="w-4 h-4" />
-                    )}
-                  </div>
+                  <ChevronRight className="w-4 h-4 text-[#B0B8C1] group-hover:text-[#3182F6] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                 </a>
               );
             })}
           </div>
-        )}
+        </section>
 
-        {/* TAB 2: ABOUT & TECH BENTO */}
-        {activeTab === "about" && (
-          <div className="w-full mt-5 flex flex-col gap-4 text-left transition-all">
-            {/* Tech Stack Bento Card */}
-            <div className="p-6 rounded-2xl glass-card shadow-xs">
-              <div className="flex items-center gap-2 mb-3">
-                <Code2 className="w-4 h-4 text-indigo-500" />
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">관심 기술 스택 & 개발 환경</h3>
-              </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4 leading-relaxed">
-                현대적인 웹 프론트엔드와 최신 AI 코딩 어시스턴트를 접목하여 신속한 프로토타이핑을 즐깁니다.
+        {/* CARD 3: FRESHMAN DAILY & STUDY SNAPSHOTS (올려주신 사진 적용!) */}
+        <section className="tds-card p-5 text-left">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-[18px] font-bold text-[#191F28] tracking-tight">
+                새내기 코딩 일상
+              </h2>
+              <p className="text-[13px] text-[#8B95A1] mt-0.5">
+                도서관과 강의실에서 열심히 공부하는 일상이에요
               </p>
-              <div className="flex flex-wrap gap-2">
-                {TECH_STACK.map((tech) => (
-                  <span
-                    key={tech.name}
-                    className={`text-xs px-3 py-1.5 rounded-xl font-medium border transition-transform hover:scale-105 select-none ${tech.color}`}
-                  >
-                    {tech.name}
-                  </span>
-                ))}
+            </div>
+            <span className="text-[12px] font-medium text-[#2B9D5B] bg-[#E8F8F0] px-2 py-0.5 rounded-full">
+              Campus 🌿
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5">
+            {/* Campus workspace photo */}
+            <div className="rounded-[16px] overflow-hidden bg-[#F2F4F6] aspect-4/3 relative group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/workspace.jpg"
+                alt="캠퍼스 코딩 공간"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute bottom-2 left-2 bg-[#191F28]/70 backdrop-blur-xs text-white text-[11px] font-medium px-2 py-0.5 rounded-full">
+                캠퍼스 코딩 공간 💻
               </div>
             </div>
 
-            {/* Now Playing Lo-Fi Vibe Widget */}
-            <div className="p-5 rounded-2xl glass-card flex items-center justify-between shadow-xs">
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-pink-500/20">
-                  <Volume2 className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider">
-                      Coding Soundtrack
-                    </span>
-                    {isPlayingMusic && (
-                      <span className="flex items-end gap-[2px] h-3 ml-1">
-                        <span className="w-[3px] bg-pink-500 rounded-full animate-wave-1" />
-                        <span className="w-[3px] bg-indigo-500 rounded-full animate-wave-2" />
-                        <span className="w-[3px] bg-purple-500 rounded-full animate-wave-3" />
-                        <span className="w-[3px] bg-pink-400 rounded-full animate-wave-4" />
-                      </span>
-                    )}
-                  </div>
-                  <h4 className="text-sm font-bold text-zinc-900 dark:text-white truncate">
-                    Lofi Chill Beats · Deep Focus
-                  </h4>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-                    바이브코딩 집중 모드 세션
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setIsPlayingMusic(!isPlayingMusic)}
-                className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-200 transition-transform active:scale-90 cursor-pointer shrink-0 ml-2"
-                title={isPlayingMusic ? "일시정지" : "재생"}
-              >
-                {isPlayingMusic ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-              </button>
-            </div>
-
-            {/* Mini Guestbook / Cheer Note Box */}
-            <div className="p-6 rounded-2xl glass-card shadow-xs">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4 text-indigo-500" />
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">한 줄 응원 남기기</h3>
-                </div>
-                <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                  {messages.length}개의 응원
-                </span>
-              </div>
-
-              {/* Form */}
-              <form onSubmit={handleAddCheer} className="mt-3 flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={guestName}
-                    onChange={(e) => setGuestName(e.target.value)}
-                    placeholder="이름 (생략 가능)"
-                    className="w-1/3 px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/70 dark:bg-zinc-900/70 focus:outline-hidden focus:border-indigo-500 text-zinc-900 dark:text-zinc-100"
-                    maxLength={15}
-                  />
-                  <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="응원의 한마디를 남겨보세요!"
-                    className="flex-1 px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/70 dark:bg-zinc-900/70 focus:outline-hidden focus:border-indigo-500 text-zinc-900 dark:text-zinc-100"
-                    maxLength={80}
-                  />
-                  <button
-                    type="submit"
-                    className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* Pre-filled cheer tags */}
-                <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                  {["🔥 멋진 사이트네요!", "☕ 커피 한잔 응원!", "🚀 바이브코딩 최고!"].map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => setNewMessage(preset)}
-                      className="text-[11px] px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 transition-colors cursor-pointer"
-                    >
-                      {preset}
-                    </button>
-                  ))}
-                </div>
-              </form>
-
-              {/* Message Feed */}
-              <div className="mt-4 flex flex-col gap-2.5 max-h-48 overflow-y-auto pr-1">
-                {messages.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-3 rounded-xl bg-white/50 dark:bg-zinc-800/40 border border-zinc-200/50 dark:border-zinc-800/50 flex items-start gap-2.5 text-xs"
-                  >
-                    <span className="text-base select-none">{item.emoji}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <strong className="font-semibold text-zinc-800 dark:text-zinc-200">
-                          {item.name}
-                        </strong>
-                        <span className="text-[10px] text-zinc-400">{item.time}</span>
-                      </div>
-                      <p className="text-zinc-600 dark:text-zinc-300 mt-0.5 leading-snug break-words">
-                        {item.message}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+            <div className="rounded-[16px] overflow-hidden bg-[#F2F4F6] aspect-4/3 relative group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/coding.jpg"
+                alt="도서관 코딩 세션"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute bottom-2 left-2 bg-[#191F28]/70 backdrop-blur-xs text-white text-[11px] font-medium px-2 py-0.5 rounded-full">
+                도서관 코딩 ☕
               </div>
             </div>
           </div>
-        )}
+        </section>
+
+        {/* CARD 4: CHEER GUESTBOOK */}
+        <section className="tds-card p-5 text-left">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-1.5">
+              <MessageCircle className="w-4 h-4 text-[#3182F6]" />
+              <h2 className="text-[18px] font-bold text-[#191F28] tracking-tight">
+                예현이에게 새내기 응원 남기기
+              </h2>
+            </div>
+            <span className="text-[12px] text-[#8B95A1] tabular-nums">
+              {cheers.length}개의 응원
+            </span>
+          </div>
+
+          <form onSubmit={handleAddCheer} className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={authorInput}
+                onChange={(e) => setAuthorInput(e.target.value)}
+                placeholder="이름"
+                className="w-24 px-3 h-11 bg-[#F2F4F6] rounded-[12px] border border-[#E5E8EB] text-[14px] text-[#191F28] placeholder-[#B0B8C1] focus:outline-hidden focus:border-[#3182F6] focus:bg-white transition-all"
+                maxLength={10}
+              />
+              <input
+                type="text"
+                value={contentInput}
+                onChange={(e) => setContentInput(e.target.value)}
+                placeholder="새내기에게 따뜻한 한마디를 남겨보세요"
+                className="flex-1 px-3.5 h-11 bg-[#F2F4F6] rounded-[12px] border border-[#E5E8EB] text-[14px] text-[#191F28] placeholder-[#B0B8C1] focus:outline-hidden focus:border-[#3182F6] focus:bg-white transition-all"
+                maxLength={60}
+              />
+              <button
+                type="submit"
+                className="w-11 h-11 rounded-[12px] bg-[#3182F6] hover:bg-[#1B64DA] text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                title="응원 등록하기"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </form>
+
+          {/* Messages list */}
+          <div className="mt-4 flex flex-col gap-2 max-h-48 overflow-y-auto">
+            {cheers.map((item) => (
+              <div
+                key={item.id}
+                className="bg-[#F9FAFB] p-3 rounded-[14px] border border-[#E5E8EB] flex flex-col text-left"
+              >
+                <div className="flex items-center justify-between text-[12px] text-[#8B95A1] mb-1">
+                  <span className="font-semibold text-[#333D4B]">{item.author}</span>
+                  <span className="tabular-nums">{item.time}</span>
+                </div>
+                <p className="text-[14px] text-[#4E5968] leading-snug">
+                  {item.content}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FOOTER */}
+        <footer className="text-center py-6 text-[13px] text-[#8B95A1] leading-relaxed">
+          <p>© 2026 김예현 · 컴퓨터공학과 1학년</p>
+          <p className="text-[12px] text-[#B0B8C1] mt-0.5">
+            토스 디자인 시스템(TDS) 가이드로 정성껏 만들었어요
+          </p>
+        </footer>
       </main>
 
-      {/* QR Code Modal */}
+      {/* TDS QR CODE BOTTOM SHEET / MODAL */}
       {showQrModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-xs p-6 rounded-3xl glass-card bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl text-center relative">
-            <button
-              onClick={() => setShowQrModal(false)}
-              className="absolute top-4 right-4 p-1 rounded-full text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
-              aria-label="닫기"
-            >
-              <X className="w-4 h-4" />
-            </button>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-white rounded-t-[24px] sm:rounded-[24px] p-6 text-center shadow-xl animate-in slide-in-from-bottom-5 duration-200">
+            {/* Sheet Handle for mobile */}
+            <div className="w-10 h-1 bg-[#E5E8EB] rounded-full mx-auto mb-4 sm:hidden" />
 
-            <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-1">
-              모바일로 공유하기
+            <h3 className="text-[18px] font-bold text-[#191F28] mb-1">
+              모바일로 프로필 열기
             </h3>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
-              카메라로 QR 코드를 스캔하여 바로 접속하세요.
+            <p className="text-[14px] text-[#8B95A1] mb-5">
+              스마트폰 카메라로 QR 코드를 비추면 바로 열려요
             </p>
 
-            {/* QR Pattern visual box */}
-            <div className="p-4 bg-white rounded-2xl border border-zinc-200 inline-block shadow-inner mb-4">
-              <svg className="w-36 h-36" viewBox="0 0 100 100" fill="none">
-                <rect width="100" height="100" fill="white" />
-                {/* Corner 1 */}
-                <rect x="10" y="10" width="25" height="25" rx="3" fill="#0f172a" />
-                <rect x="15" y="15" width="15" height="15" rx="1.5" fill="white" />
-                <rect x="18" y="18" width="9" height="9" rx="1" fill="#4f46e5" />
+            {/* QR Pattern */}
+            <div className="p-3 bg-[#F9FAFB] rounded-[20px] border border-[#E5E8EB] inline-block mb-5">
+              <svg className="w-40 h-40" viewBox="0 0 100 100" fill="none">
+                <rect width="100" height="100" fill="white" rx="12" />
+                <rect x="12" y="12" width="22" height="22" rx="4" fill="#191F28" />
+                <rect x="16" y="16" width="14" height="14" rx="2" fill="white" />
+                <rect x="19" y="19" width="8" height="8" rx="1.5" fill="#3182F6" />
 
-                {/* Corner 2 */}
-                <rect x="65" y="10" width="25" height="25" rx="3" fill="#0f172a" />
-                <rect x="70" y="15" width="15" height="15" rx="1.5" fill="white" />
-                <rect x="73" y="18" width="9" height="9" rx="1" fill="#4f46e5" />
+                <rect x="66" y="12" width="22" height="22" rx="4" fill="#191F28" />
+                <rect x="70" y="16" width="14" height="14" rx="2" fill="white" />
+                <rect x="73" y="19" width="8" height="8" rx="1.5" fill="#3182F6" />
 
-                {/* Corner 3 */}
-                <rect x="10" y="65" width="25" height="25" rx="3" fill="#0f172a" />
-                <rect x="15" y="70" width="15" height="15" rx="1.5" fill="white" />
-                <rect x="18" y="73" width="9" height="9" rx="1" fill="#4f46e5" />
+                <rect x="12" y="66" width="22" height="22" rx="4" fill="#191F28" />
+                <rect x="16" y="70" width="14" height="14" rx="2" fill="white" />
+                <rect x="19" y="73" width="8" height="8" rx="1.5" fill="#3182F6" />
 
-                {/* Data blocks */}
-                <rect x="42" y="14" width="6" height="6" fill="#0f172a" />
-                <rect x="52" y="14" width="6" height="6" fill="#0f172a" />
-                <rect x="42" y="24" width="6" height="6" fill="#4f46e5" />
-                <rect x="52" y="24" width="6" height="6" fill="#0f172a" />
-                <rect x="42" y="34" width="16" height="6" fill="#0f172a" />
-                <rect x="14" y="42" width="6" height="16" fill="#0f172a" />
-                <rect x="24" y="42" width="6" height="8" fill="#4f46e5" />
-                <rect x="70" y="42" width="16" height="6" fill="#0f172a" />
-                <rect x="70" y="52" width="8" height="6" fill="#4f46e5" />
-                <rect x="82" y="52" width="6" height="6" fill="#0f172a" />
-                <rect x="42" y="52" width="6" height="6" fill="#0f172a" />
-                <rect x="52" y="52" width="6" height="16" fill="#4f46e5" />
-                <rect x="42" y="70" width="8" height="8" fill="#0f172a" />
-                <rect x="70" y="70" width="8" height="8" fill="#0f172a" />
-                <rect x="80" y="80" width="8" height="8" fill="#4f46e5" />
-                <rect x="62" y="80" width="6" height="8" fill="#0f172a" />
+                <rect x="42" y="16" width="6" height="6" rx="1" fill="#191F28" />
+                <rect x="52" y="16" width="6" height="6" rx="1" fill="#191F28" />
+                <rect x="42" y="26" width="6" height="6" rx="1" fill="#3182F6" />
+                <rect x="52" y="26" width="6" height="6" rx="1" fill="#191F28" />
+                <rect x="42" y="36" width="16" height="6" rx="1" fill="#191F28" />
+                <rect x="16" y="44" width="6" height="16" rx="1" fill="#191F28" />
+                <rect x="26" y="44" width="6" height="8" rx="1" fill="#3182F6" />
+                <rect x="70" y="44" width="14" height="6" rx="1" fill="#191F28" />
+                <rect x="70" y="54" width="8" height="6" rx="1" fill="#3182F6" />
+                <rect x="80" y="54" width="6" height="6" rx="1" fill="#191F28" />
+                <rect x="42" y="54" width="6" height="6" rx="1" fill="#191F28" />
+                <rect x="52" y="54" width="6" height="14" rx="1" fill="#3182F6" />
+                <rect x="42" y="72" width="8" height="8" rx="1" fill="#191F28" />
+                <rect x="70" y="72" width="8" height="8" rx="1" fill="#191F28" />
+                <rect x="80" y="82" width="8" height="8" rx="1" fill="#3182F6" />
+                <rect x="62" y="82" width="6" height="8" rx="1" fill="#191F28" />
               </svg>
             </div>
 
-            <button
-              onClick={handleShare}
-              className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>{copied ? "링크 복사 완료!" : "링크 복사하기"}</span>
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleShare}
+                className="w-full h-12 rounded-[14px] bg-[#3182F6] hover:bg-[#1B64DA] text-white text-[15px] font-semibold transition-colors cursor-pointer"
+              >
+                링크 복사하기
+              </button>
+              <button
+                onClick={() => setShowQrModal(false)}
+                className="w-full h-12 rounded-[14px] bg-[#F2F4F6] text-[#4E5968] text-[15px] font-medium transition-colors cursor-pointer"
+              >
+                닫기
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="w-full max-w-xl text-center mt-12 pt-6 border-t border-zinc-200/60 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-        <p>
-          Powered by <strong className="font-semibold text-zinc-800 dark:text-zinc-200">MyLink</strong> · © 2026 김예현
-        </p>
-        <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1 text-[11px] text-zinc-400 dark:text-zinc-500">
-            <span>Crafted with</span>
-            <Heart className="w-3 h-3 text-rose-500 fill-rose-500 inline" />
-            <span>& Vibe</span>
-          </span>
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+      {/* TDS FIXED BOTTOM CTA BAR (Height 56px with Scrim Protection) */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex flex-col items-center pointer-events-none">
+        {/* Protection Scrim Gradient */}
+        <div className="w-full h-8 tds-cta-scrim" />
+
+        {/* Bottom CTA Button Container */}
+        <div className="w-full max-w-lg px-4 pb-4 bg-[#F2F4F6] pointer-events-auto">
+          <a
+            href="mailto:294705559+elixkim404@users.noreply.github.com"
+            className="tds-btn-primary w-full h-14 rounded-[16px] font-bold text-[17px] flex items-center justify-center gap-2 shadow-sm cursor-pointer"
           >
-            맨 위로 ↑
-          </button>
+            <Coffee className="w-5 h-5" />
+            <span>예현이와 커피챗 &amp; 이야기 나누기</span>
+          </a>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }
