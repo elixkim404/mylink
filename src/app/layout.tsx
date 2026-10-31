@@ -13,17 +13,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "김예현 | 마이링크 (MyLink)",
-  description: "안녕하세요, 저는 바이브코딩을 배우는 대학생입니다.",
+  title: "김예현 (elixkim404) | MyLink",
+  description: "바이브코딩으로 아이디어를 현실로 만드는 대학생 개발자 김예현의 프로필 & 링크",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html
-      lang="en"
+      lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col selection:bg-indigo-500 selection:text-white">
+        {children}
+      </body>
     </html>
   );
 }
