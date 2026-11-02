@@ -1,69 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --tds-blue-500: #3182f6;
-  --tds-blue-600: #1b64da;
-  --tds-blue-50: #e8f3ff;
-  --tds-grey-900: #191f28;
-  --tds-grey-800: #333d4b;
-  --tds-grey-700: #4e5968;
-  --tds-grey-600: #6b7684;
-  --tds-grey-500: #8b95a1;
-  --tds-grey-400: #b0b8c1;
-  --tds-grey-300: #d1d6db;
-  --tds-grey-200: #e5e8eb;
-  --tds-grey-100: #f2f4f6;
-  --tds-grey-50: #f9fafb;
-  --tds-red-500: #f04452;
-  --tds-green-500: #2b9d5b;
-  --tds-yellow-500: #ffc342;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", Roboto, "Helvetica Neue", sans-serif;
 }
 
 body {
-  background-color: var(--tds-grey-100);
-  color: var(--tds-grey-900);
-  font-family: -apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", Roboto, "Helvetica Neue", sans-serif;
+  background-color: #F9FAFB;
+  color: #191F28;
+  font-family: var(--font-sans);
   letter-spacing: -0.015em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-}
-
-/* TDS Card */
-.tds-card {
-  background-color: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-}
-
-/* TDS List Row press overlay */
-.tds-pressable {
-  transition: background-color 0.15s ease, transform 0.12s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.tds-pressable:active {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-/* TDS Button primary press */
-.tds-btn-primary {
-  background-color: var(--tds-blue-500);
-  color: #ffffff;
-  transition: background-color 0.12s ease, transform 0.1s ease;
-}
-.tds-btn-primary:active {
-  background-color: var(--tds-blue-600);
-  transform: scale(0.985);
-}
-
-/* Protection gradient above bottom CTA */
-.tds-cta-scrim {
-  background: linear-gradient(to top, rgba(242, 244, 246, 1) 50%, rgba(242, 244, 246, 0) 100%);
-}
-
-/* Numeric tabular formatting */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
 }

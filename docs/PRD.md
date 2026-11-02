@@ -1,12 +1,14 @@
 # MyLink — Product Requirements Document (PRD)
 
-> **버전**: v0.3  
-> **작성일**: 2026-11-01  
+> **버전**: v0.5  
+> **작성일**: 2026-11-03  
 > **작성자**: 김예현  
 > **상태**: 작성 중 (In Progress)  
 > **변경 이력**:  
 > - v0.1 → v0.2: 전역 상태 관리 전략 추가, 개발 단계(Phase) 재정의, 기술 스택 보완  
-> - v0.2 → v0.3: 사용자(소유자) 및 방문자 시나리오 분리 및 구체화 (SC-U01~05, SC-V01~04)
+> - v0.2 → v0.3: 사용자(소유자) 및 방문자 시나리오 분리 및 구체화 (SC-U01~05, SC-V01~04)  
+> - v0.3 → v0.4: 디자인 시스템 구축 전략 갱신 (shadcn/ui 기반 채택 및 design.md 토스 디자인 시스템(TDS) 스타일 커스텀 적용 원칙 명시)  
+> - v0.4 → v0.5: 스타일링 방식 통일 (모듈 CSS 일체 배제 및 100% Tailwind CSS 통일) 및 shadcn/ui 기반 재사용 컴포넌트(components/ui) 구축 및 활용 원칙 명시
 
 ---
 
@@ -18,7 +20,7 @@
 
 - **누구나** 간편 가입 후 나만의 퍼블릭 프로필 페이지(`mylink.app/@handle`)를 만든다.
 - 링크 관리를 **모바일에서도 쉽고 직관적**으로 할 수 있게 한다.
-- **토스 디자인 시스템(TDS)** 기반의 깔끔하고 신뢰감 있는 UI를 제공한다.
+- **shadcn/ui + 토스 디자인 시스템(TDS)** 기반의 접근성 높고 신뢰감 있는 깔끔한 UI를 제공한다.
 - 추후 분석·수익화·API 기능을 올릴 수 있는 **확장 가능한 기반**을 마련한다.
 
 ---
@@ -355,12 +357,38 @@ US-08  로그인 사용자로서, 대시보드에서 지난 30일간
 | 레이어 | 기술 |
 |---|---|
 | **프레임워크** | Next.js 15+ (App Router) + TypeScript |
-| **스타일링** | Tailwind CSS v4 + TDS 디자인 토큰 |
+| **스타일링 & UI** | **100% Tailwind CSS (CSS Modules 일체 배제)** + shadcn/ui 기반 재사용 컴포넌트(`components/ui`) + TDS 커스텀 디자인 토큰 |
 | **인증 / DB** | Supabase (Auth + PostgreSQL + Storage) — Phase 1 |
 | **임시 데이터** | `localStorage` — Phase 0 프로토타입 전용 |
 | **DnD** | `@dnd-kit/core` (모바일 터치 지원) |
 | **폼 검증** | `zod` + React Hook Form |
 | **배포** | Vercel (Edge Network, ISR) |
+
+### 디자인 시스템 및 UI 컴포넌트 구축 전략 (shadcn/ui + TDS)
+
+> 앞으로의 모든 디자인 및 UI 구축은 **shadcn/ui 기반 재사용 컴포넌트**로 진행하되, 기본 테마가 아닌 **`docs/design.md`에 명시된 토스 디자인 시스템(TDS, Toss Design System) 룩앤필 및 인터랙션**을 완벽히 입혀서 구축한다.  
+> 또한, 유지보수성과 스타일 일관성을 보장하기 위해 **모듈 CSS(`*.module.css`) 사용을 일체 배제하고 100% Tailwind CSS 유틸리티 클래스로 통일**한다.
+
+1. **스타일링 표준화 원칙 (Tailwind CSS Only)**
+   - 별도의 CSS 모듈 파일(`*.module.css`)이나 독자적인 커스텀 클래스 남용을 금지하고, 모든 스타일링을 **Tailwind CSS 유틸리티 클래스로 단일화**한다.
+   - 조건부 스타일링 및 클래스 병합은 `clsx`와 `tailwind-merge` 기반의 `cn()` 헬퍼 유틸리티(`lib/utils.ts`)를 일관되게 사용한다.
+
+2. **기반 아키텍처: shadcn/ui 재사용 컴포넌트 (`components/ui`)**
+   - WAI-ARIA 접근성, 키보드 네비게이션, 모달 포커스 트랩, 토글/다이얼로그 상태 관리 등 컴포넌트의 기능적 베이스는 검증된 **shadcn/ui (Radix UI Primitives)**를 활용한다.
+   - 복사 및 소유(Copy & Own) 방식으로 프로젝트 내 `components/ui` 디렉터리에 공통 컴포넌트(`Button`, `Card`, `Badge`, `Input`, `Avatar`, `Dialog` 등)를 위치시켜 모든 페이지 및 위젯에서 일관되게 재사용한다.
+
+3. **디자인 적용 원칙: `design.md`의 토스 디자인 시스템(TDS) 구현**
+   - shadcn/ui의 컴포넌트 구조 위에 `docs/design.md` (및 `DESIGN.md`)의 토스 디자인 토큰을 100% 매핑하여 스타일링한다.
+   - **컬러 팔레트**: Toss Blue (`#3182F6` / `blue-500`), 배경용 `grey-50` (`#F9FAFB`), 카드 배경 `white`, 본문 텍스트 `grey-900` (`#191F28`, 순수 블랙 `#000000` 사용 금지), 보더 `grey-200` (`#E5E8EB`) 및 은은한 반투명 라인.
+   - **형태 및 곡률 (Border Radius)**: 토스 특유의 넉넉하고 부드러운 곡률 적용 (링크 카드 `rounded-2xl`, 메인 컨테이너 및 모달 `rounded-3xl` 등).
+   - **마이크로 인터랙션**: 누를 때 살짝 들어가는 터치/클릭 반응(`active:scale-[0.98]`, `transition-all duration-150`), 햅틱 피드백을 연상시키는 매끄러운 모션.
+   - **핵심 컴포넌트 가이드라인**:
+     - `Button`: Primary CTA(Toss Blue 솔리드 + 볼드 타이포), Secondary(`grey-100` 배경의 은은한 버튼).
+     - `Card`: TDS 링크 카드 형태 (`rounded-2xl bg-white border border-[#E5E8EB] shadow-[0_2px_8px_rgba(0,0,0,0.02)]`).
+     - `Dialog / Sheet`: 모바일 친화적 바텀시트 / 팝업 모달 (`bg-black/60 backdrop-blur-xs` 딤 처리 및 부드러운 등장 애니메이션).
+     - `Badge`: 블루 톤 라벨(`bg-[#E8F3FF] text-[#3182F6]`) 및 상태 뱃지.
+     - `Switch`: 링크 활성/비활성 제어 스위치 (TDS 블루 포인트 컬러).
+     - `Toast / Sonner`: 토스 스타일 하단 플로팅 피드백 토스트.
 
 ### 전역 상태 관리 전략
 
