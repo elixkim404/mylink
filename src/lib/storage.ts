@@ -1,4 +1,4 @@
-import { MyLinkData } from "../types/mylink";
+import { MyLinkData, LinkItem } from "../types/mylink";
 
 export const STORAGE_KEY = "mylink_data";
 
@@ -147,3 +147,33 @@ export function incrementLinkClick(linkId: string): void {
     console.error("Failed to record link click:", err);
   }
 }
+
+export function addStoredLink(
+  newLinkData: Omit<LinkItem, "id" | "click_count">
+): LinkItem {
+  const newLink: LinkItem = {
+    ...newLinkData,
+    id: `link-${Date.now()}`,
+    click_count: 0,
+    sort_order: 1,
+  };
+
+  if (typeof window !== "undefined") {
+    try {
+      const data = getStoredMyLinkData();
+      const updatedLinks = [
+        newLink,
+        ...data.links.map((link, idx) => ({
+          ...link,
+          sort_order: idx + 2,
+        })),
+      ];
+      saveStoredMyLinkData({ ...data, links: updatedLinks });
+    } catch (err) {
+      console.error("Failed to add link to storage:", err);
+    }
+  }
+
+  return newLink;
+}
+

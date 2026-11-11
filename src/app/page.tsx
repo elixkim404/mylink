@@ -9,16 +9,19 @@ import {
   Coffee,
   ShieldCheck,
   ArrowRight,
+  Plus,
 } from "lucide-react";
 import { MyLinkData, LinkItem, CheerMessage } from "../types/mylink";
 import {
   getStoredMyLinkData,
   saveStoredMyLinkData,
+  addStoredLink,
   DEFAULT_MYLINK_DATA,
 } from "../lib/storage";
 import { ProfileHero } from "../components/ProfileHero";
 import { LinkCard } from "../components/LinkCard";
 import { QRCodeModal } from "../components/QRCodeModal";
+import { AddLinkDialog } from "../components/AddLinkDialog";
 import { CheerSection } from "../components/CheerSection";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
@@ -27,13 +30,17 @@ import { Badge } from "../components/ui/badge";
 export default function PublicProfilePage() {
   const [data, setData] = useState<MyLinkData>(DEFAULT_MYLINK_DATA);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [hasCheered, setHasCheered] = useState(false);
 
   // Load data from localStorage on mount (Phase 0 spec)
   useEffect(() => {
     const stored = getStoredMyLinkData();
-    setData(stored);
+    const animId = requestAnimationFrame(() => {
+      setData(stored);
+    });
+    return () => cancelAnimationFrame(animId);
   }, []);
 
   const showToast = (msg: string) => {
@@ -114,6 +121,21 @@ export default function PublicProfilePage() {
     setData((prev) => ({ ...prev, links: updatedLinks }));
   };
 
+  const handleAddLink = (newLinkData: Omit<LinkItem, "id" | "click_count">) => {
+    const newLink = addStoredLink(newLinkData);
+    setData((prev) => {
+      const updatedLinks = [
+        newLink,
+        ...prev.links.map((link, idx) => ({
+          ...link,
+          sort_order: idx + 2,
+        })),
+      ];
+      return { ...prev, links: updatedLinks };
+    });
+    showToast("새 링크가 성공적으로 추가되었어요 ✨");
+  };
+
   // Filter active links and sort by sort_order (F-04, F-07)
   const activeLinks = data.links
     .filter((l) => l.is_active)
@@ -192,9 +214,16 @@ export default function PublicProfilePage() {
                 {activeLinks.length}개
               </Badge>
             </div>
-            <span className="text-[12px] text-[#8B95A1]">
-              탭하면 바로 연결돼요
-            </span>
+            {/* [+ 새 링크 추가] Button (TDS Style) */}
+            <Button
+              onClick={() => setShowAddModal(true)}
+              variant="brandWeak"
+              size="sm"
+              className="h-8 px-2.5 rounded-full text-[12px] font-bold gap-1 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>새 링크 추가</span>
+            </Button>
           </div>
 
           {/* Links List */}
@@ -209,8 +238,17 @@ export default function PublicProfilePage() {
               ))}
             </div>
           ) : (
-            <Card className="p-8 text-center text-[#8B95A1]">
+            <Card className="p-8 text-center text-[#8B95A1] flex flex-col items-center gap-3">
               <p className="text-[14px]">현재 노출 중인 링크가 없어요.</p>
+              <Button
+                onClick={() => setShowAddModal(true)}
+                variant="default"
+                size="sm"
+                className="rounded-xl font-bold"
+              >
+                <Plus className="w-4 h-4" />
+                <span>첫 링크 추가하기</span>
+              </Button>
             </Card>
           )}
         </section>
@@ -311,6 +349,13 @@ export default function PublicProfilePage() {
         displayName={data.profile.display_name}
         handle={data.profile.handle}
         onCopySuccess={() => showToast("프로필 주소가 복사되었어요 📋")}
+      />
+
+      {/* 8. Add Link Dialog */}
+      <AddLinkDialog
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAddLink={handleAddLink}
       />
 
       {/* Floating Bottom Action Bar using Tailwind & shadcn Button */}
