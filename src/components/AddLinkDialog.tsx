@@ -14,6 +14,7 @@ import {
   X,
   AlertCircle,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { LinkItem } from "../types/mylink";
 import {
@@ -30,7 +31,7 @@ import { Badge } from "./ui/badge";
 interface AddLinkDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddLink: (linkData: Omit<LinkItem, "id" | "click_count">) => void;
+  onAddLink: (linkData: Omit<LinkItem, "id" | "click_count">) => void | Promise<void>;
 }
 
 const PRESET_EMOJIS = ["🔗", "💻", "📝", "📚", "🐙", "☕", "🎨", "🚀", "💼", "🎬", "🌟", "💡"];
@@ -236,6 +237,7 @@ export function isValidWebUrl(urlStr: string): boolean {
 
 export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps) {
   const [isSmartFilled, setIsSmartFilled] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // React Hook Form 설정 (Zod Resolver 연결 및 실시간 onChange 검증)
   const {
@@ -367,7 +369,9 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
   };
 
   // 폼 제출 핸들러 (제목만 입력 또는 주소만 입력 시 모두 확실하게 경고 노출)
-  const onSubmit = (data: LinkFormValues) => {
+  const onSubmit = async (data: LinkFormValues) => {
+    if (isSubmitting) return;
+
     const trimmedUrl = (data.url || "").trim();
     const trimmedTitle = (data.title || "").trim();
 
@@ -417,17 +421,23 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
       finalUrl = `https://${finalUrl}`;
     }
 
-    onAddLink({
-      url: finalUrl,
-      title: trimmedTitle,
-      subtitle: data.subtitle?.trim() || undefined,
-      icon: data.icon || "🔗",
-      badge: data.badge?.trim() || undefined,
-      is_active: true,
-      sort_order: 1, // 최상단에 배치
-    });
-
-    handleClose();
+    try {
+      setIsSubmitting(true);
+      await onAddLink({
+        url: finalUrl,
+        title: trimmedTitle,
+        subtitle: data.subtitle?.trim() || undefined,
+        icon: data.icon || "🔗",
+        badge: data.badge?.trim() || undefined,
+        is_active: true,
+        sort_order: 1, // 최상단에 배치
+      });
+      handleClose();
+    } catch (err) {
+      console.error("링크 등록 실패:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const { ref: urlRegisterRef, ...urlRegisterProps } = register("url");
@@ -435,10 +445,10 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
   const { ref: subtitleRegisterRef, ...subtitleRegisterProps } = register("subtitle");
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && handleClose()}>
       <DialogContent
         className="max-w-[430px] max-h-[90vh] overflow-y-auto text-left p-5 sm:p-6"
-        onClose={handleClose}
+        onClose={() => !isSubmitting && handleClose()}
       >
         <DialogHeader className="text-left mb-4">
           <div className="flex items-center gap-1.5 text-[#3182F6] text-[13px] font-semibold mb-1">
@@ -732,6 +742,7 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
               type="button"
               variant="secondary"
               onClick={handleClose}
+              disabled={isSubmitting}
               className="flex-1 h-12 rounded-xl text-[14px]"
             >
               취소
@@ -739,10 +750,20 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
             <Button
               type="submit"
               variant="default"
-              className="flex-1 h-12 rounded-xl text-[14px] font-bold bg-[#3182F6] hover:bg-[#1B64DA] shadow-xs"
+              disabled={isSubmitting}
+              className="flex-1 h-12 rounded-xl text-[14px] font-bold bg-[#3182F6] hover:bg-[#1B64DA] shadow-xs disabled:opacity-50"
             >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>링크 등록하기</span>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>저장 중...</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 stroke-[2.5]" />
+                  <span>링크 등록하기</span>
+                </>
+              )}
             </Button>
           </div>
         </form>

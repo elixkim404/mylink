@@ -18,6 +18,11 @@ import {
   addStoredLink,
   DEFAULT_MYLINK_DATA,
 } from "../lib/storage";
+import {
+  addFirebaseLink,
+  getFirebaseLinks,
+  incrementFirebaseLinkClick,
+} from "../lib/firebaseLinks";
 import { ProfileHero } from "../components/ProfileHero";
 import { LinkCard } from "../components/LinkCard";
 import { QRCodeModal } from "../components/QRCodeModal";
@@ -34,13 +39,29 @@ export default function PublicProfilePage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [hasCheered, setHasCheered] = useState(false);
 
-  // Load data from localStorage on mount (Phase 0 spec)
+  // Load data from localStorage and sync with Firebase (users/anonymous/links)
   useEffect(() => {
+    // 1. 초기 렌더링을 위해 로컬 데이터 즉각 로드
     const stored = getStoredMyLinkData();
-    const animId = requestAnimationFrame(() => {
-      setData(stored);
-    });
-    return () => cancelAnimationFrame(animId);
+    setData(stored);
+
+    // 2. Firebase Firestore에서 최신 링크 목록 동기화
+    getFirebaseLinks()
+      .then((remoteLinks) => {
+        if (remoteLinks.length > 0) {
+          setData((prev) => {
+            const remoteIds = new Set(remoteLinks.map((l) => l.id));
+            const remainingLocal = prev.links.filter((l) => !remoteIds.has(l.id));
+            const mergedLinks = [...remoteLinks, ...remainingLocal];
+            const updated = { ...prev, links: mergedLinks };
+            saveStoredMyLinkData(updated);
+            return updated;
+          });
+        }
+      })
+      .catch((err) => {
+        console.warn("Firestore 동기화 중 오류 (로컬 모드로 동작):", err);
+      });
   }, []);
 
   const showToast = (msg: string) => {
@@ -118,10 +139,15 @@ export default function PublicProfilePage() {
         ? { ...link, click_count: (link.click_count || 0) + 1 }
         : link
     );
-    setData((prev) => ({ ...prev, links: updatedLinks }));
+    const updatedData = { ...data, links: updatedLinks };
+    setData(updatedData);
+    saveStoredMyLinkData(updatedData);
+
+    // Firebase Firestore 클릭 카운트 동기화 (비동기)
+    incrementFirebaseLinkClick(clickedLink.id);
   };
 
-  const handleAddLink = (newLinkData: Omit<LinkItem, "id" | "click_count">) => {
+  const handleAddLink = async (newLinkData: Omit<LinkItem, "id" | "click_count">) => {
     const rawUrl = (newLinkData.url || "").trim();
     const rawTitle = (newLinkData.title || "").trim();
 
@@ -131,18 +157,39 @@ export default function PublicProfilePage() {
       return;
     }
 
-    const newLink = addStoredLink(newLinkData);
-    setData((prev) => {
-      const updatedLinks = [
-        newLink,
-        ...prev.links.map((link, idx) => ({
-          ...link,
-          sort_order: idx + 2,
-        })),
-      ];
-      return { ...prev, links: updatedLinks };
-    });
-    showToast("새 링크가 성공적으로 추가되었어요 ✨");
+    try {
+      // 1. Firebase Firestore (users/anonymous/links)에 저장
+      const newLink = await addFirebaseLink(newLinkData);
+
+      setData((prev) => {
+        const updatedLinks = [
+          newLink,
+          ...prev.links.map((link, idx) => ({
+            ...link,
+            sort_order: idx + 2,
+          })),
+        ];
+        const updatedData = { ...prev, links: updatedLinks };
+        saveStoredMyLinkData(updatedData);
+        return updatedData;
+      });
+      showToast("새 링크가 Firebase에 성공적으로 저장되었어요 ✨");
+    } catch (error) {
+      console.error("Firebase 링크 저장 실패, 로컬 저장소로 fallback:", error);
+      // 오프라인 혹은 네트워크 오류 시 로컬스토리지 fallback
+      const fallbackLink = addStoredLink(newLinkData);
+      setData((prev) => {
+        const updatedLinks = [
+          fallbackLink,
+          ...prev.links.map((link, idx) => ({
+            ...link,
+            sort_order: idx + 2,
+          })),
+        ];
+        return { ...prev, links: updatedLinks };
+      });
+      showToast("새 링크가 로컬에 안전하게 저장되었어요 💾");
+    }
   };
 
   // Filter active links and sort by sort_order (F-04, F-07)
