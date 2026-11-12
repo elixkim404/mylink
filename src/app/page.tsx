@@ -21,6 +21,7 @@ import {
 import {
   addFirebaseLink,
   getFirebaseLinks,
+  getTimestampNumber,
   incrementFirebaseLinkClick,
 } from "../lib/firebaseLinks";
 import { ProfileHero } from "../components/ProfileHero";
@@ -39,28 +40,25 @@ export default function PublicProfilePage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [hasCheered, setHasCheered] = useState(false);
 
-  // Load data from localStorage and sync with Firebase (users/anonymous/links)
+  // Load data from localStorage and fetch from Firebase (users/anonymous/links) on page load
   useEffect(() => {
-    // 1. 초기 렌더링을 위해 로컬 데이터 즉각 로드
+    // 1. 초기 렌더링을 위해 로컬 캐시 즉시 로드
     const stored = getStoredMyLinkData();
     setData(stored);
 
-    // 2. Firebase Firestore에서 최신 링크 목록 동기화
+    // 2. 페이지 로드 시 Firebase Firestore에서 최신 링크 목록 1회 불러오기 (createdAt 최신순 정렬)
     getFirebaseLinks()
       .then((remoteLinks) => {
         if (remoteLinks.length > 0) {
           setData((prev) => {
-            const remoteIds = new Set(remoteLinks.map((l) => l.id));
-            const remainingLocal = prev.links.filter((l) => !remoteIds.has(l.id));
-            const mergedLinks = [...remoteLinks, ...remainingLocal];
-            const updated = { ...prev, links: mergedLinks };
+            const updated = { ...prev, links: remoteLinks };
             saveStoredMyLinkData(updated);
             return updated;
           });
         }
       })
       .catch((err) => {
-        console.warn("Firestore 동기화 중 오류 (로컬 모드로 동작):", err);
+        console.warn("Firestore 링크 로드 중 오류 (로컬 모드로 동작):", err);
       });
   }, []);
 
@@ -161,15 +159,11 @@ export default function PublicProfilePage() {
       // 1. Firebase Firestore (users/anonymous/links)에 저장
       const newLink = await addFirebaseLink(newLinkData);
 
+      // 2. 링크 추가 후 최신 Firestore 목록 다시 불러와 목록 갱신 (createdAt 최신순)
+      const latestLinks = await getFirebaseLinks();
       setData((prev) => {
-        const updatedLinks = [
-          newLink,
-          ...prev.links.map((link, idx) => ({
-            ...link,
-            sort_order: idx + 2,
-          })),
-        ];
-        const updatedData = { ...prev, links: updatedLinks };
+        const nextLinks = latestLinks.length > 0 ? latestLinks : [newLink, ...prev.links];
+        const updatedData = { ...prev, links: nextLinks };
         saveStoredMyLinkData(updatedData);
         return updatedData;
       });
@@ -179,23 +173,26 @@ export default function PublicProfilePage() {
       // 오프라인 혹은 네트워크 오류 시 로컬스토리지 fallback
       const fallbackLink = addStoredLink(newLinkData);
       setData((prev) => {
-        const updatedLinks = [
-          fallbackLink,
-          ...prev.links.map((link, idx) => ({
-            ...link,
-            sort_order: idx + 2,
-          })),
-        ];
-        return { ...prev, links: updatedLinks };
+        const updatedLinks = [fallbackLink, ...prev.links];
+        const updatedData = { ...prev, links: updatedLinks };
+        saveStoredMyLinkData(updatedData);
+        return updatedData;
       });
       showToast("새 링크가 로컬에 안전하게 저장되었어요 💾");
     }
   };
 
-  // Filter active links and sort by sort_order (F-04, F-07)
+  // Filter active links and sort by createdAt (최신순 내림차순 정렬)
   const activeLinks = data.links
     .filter((l) => l.is_active)
-    .sort((a, b) => a.sort_order - b.sort_order);
+    .sort((a, b) => {
+      const timeA = getTimestampNumber(a.createdAt);
+      const timeB = getTimestampNumber(b.createdAt);
+      if (timeA !== timeB) {
+        return timeB - timeA; // 최신순 (내림차순)
+      }
+      return (a.sort_order ?? 1) - (b.sort_order ?? 1);
+    });
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] text-[#191F28] flex flex-col items-center pb-24 selection:bg-[#3182F6] selection:text-white">

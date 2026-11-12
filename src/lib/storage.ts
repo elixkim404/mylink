@@ -26,6 +26,7 @@ export const DEFAULT_MYLINK_DATA: MyLinkData = {
       is_active: true,
       sort_order: 1,
       click_count: 243,
+      createdAt: "2026-11-10T09:00:00.000Z",
     },
     {
       id: "link-2",
@@ -37,6 +38,7 @@ export const DEFAULT_MYLINK_DATA: MyLinkData = {
       is_active: true,
       sort_order: 2,
       click_count: 128,
+      createdAt: "2026-11-09T09:00:00.000Z",
     },
     {
       id: "link-3",
@@ -48,6 +50,7 @@ export const DEFAULT_MYLINK_DATA: MyLinkData = {
       is_active: true,
       sort_order: 3,
       click_count: 57,
+      createdAt: "2026-11-08T09:00:00.000Z",
     },
     {
       id: "link-4",
@@ -59,6 +62,7 @@ export const DEFAULT_MYLINK_DATA: MyLinkData = {
       is_active: true,
       sort_order: 4,
       click_count: 82,
+      createdAt: "2026-11-07T09:00:00.000Z",
     },
     {
       id: "link-5",
@@ -69,6 +73,7 @@ export const DEFAULT_MYLINK_DATA: MyLinkData = {
       is_active: false,
       sort_order: 5,
       click_count: 14,
+      createdAt: "2026-11-06T09:00:00.000Z",
     },
   ],
   cheer_count: 168,
@@ -164,6 +169,7 @@ export function addStoredLink(
     id: `link-${Date.now()}`,
     click_count: 0,
     sort_order: 1,
+    createdAt: new Date().toISOString(),
   };
 
   if (typeof window !== "undefined") {

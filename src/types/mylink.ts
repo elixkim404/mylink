@@ -21,6 +21,7 @@ export interface LinkItem {
   is_active: boolean;
   sort_order: number;
   click_count?: number;
+  createdAt?: any;
 }
 
 export interface CheerMessage {
