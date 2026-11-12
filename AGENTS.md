@@ -7,15 +7,3 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
-
-## 🌐 언어 및 문서 작성 규칙 (필수)
-
-- **모든 문서와 답변은 반드시 한국어(한글)로 작성**합니다.
-- **계획/태스크/워크스루 포함**: 작업 계획(Plan), 구현 계획(Implementation Plan), 태스크 목록(Tasks/Task List), 워크스루(Walkthrough) 문서 및 모든 아티팩트는 예외 없이 **반드시 한국어(한글)**로 작성합니다.
-- 대화, 코드 설명, 주석, 커밋 메시지 등 AI 에이전트가 생성하는 모든 텍스트에 한글을 기본 언어로 사용합니다.
-- 기술 용어는 필요 시 병기하되, 본문 및 설명 문장은 항상 자연스러운 한국어로 서술합니다.
-
-## 📋 작업 완료 후 워크스루(Walkthrough) 아티팩트 자동 생성 (필수)
-
-- 작업 완료 후 항상 워크스루(`walkthrough.md`) 아티팩트를 자동 생성하여 사용자가 확인할 수 있도록 안내합니다.
-
