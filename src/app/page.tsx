@@ -122,6 +122,15 @@ export default function PublicProfilePage() {
   };
 
   const handleAddLink = (newLinkData: Omit<LinkItem, "id" | "click_count">) => {
+    const rawUrl = (newLinkData.url || "").trim();
+    const rawTitle = (newLinkData.title || "").trim();
+
+    // 엄격한 2차 방어선: 빈 URL이나 올바르지 않은 주소는 저장 원천 차단
+    if (!rawUrl || rawUrl === "https://" || rawUrl === "http://" || !rawTitle) {
+      showToast("올바른 링크 주소와 제목을 입력해주세요 ⚠️");
+      return;
+    }
+
     const newLink = addStoredLink(newLinkData);
     setData((prev) => {
       const updatedLinks = [

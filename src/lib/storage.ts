@@ -151,6 +151,14 @@ export function incrementLinkClick(linkId: string): void {
 export function addStoredLink(
   newLinkData: Omit<LinkItem, "id" | "click_count">
 ): LinkItem {
+  const rawUrl = (newLinkData.url || "").trim();
+  const rawTitle = (newLinkData.title || "").trim();
+
+  // URL 및 제목 유효성 가드: 비어있거나 불완전한 URL은 로컬스토리지에 저장하지 않음
+  if (!rawUrl || rawUrl === "https://" || rawUrl === "http://" || !rawTitle) {
+    throw new Error("올바른 URL과 제목이 필요합니다.");
+  }
+
   const newLink: LinkItem = {
     ...newLinkData,
     id: `link-${Date.now()}`,

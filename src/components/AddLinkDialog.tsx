@@ -1,7 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Sparkles, Globe, Smile, Tag, ChevronRight, X } from "lucide-react";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Plus,
+  Sparkles,
+  Globe,
+  Smile,
+  Tag,
+  ChevronRight,
+  X,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 import { LinkItem } from "../types/mylink";
 import {
   Dialog,
@@ -23,6 +36,64 @@ interface AddLinkDialogProps {
 const PRESET_EMOJIS = ["🔗", "💻", "📝", "📚", "🐙", "☕", "🎨", "🚀", "💼", "🎬", "🌟", "💡"];
 const PRESET_BADGES = ["Featured", "Portfolio", "Blog", "Study", "Active", "New"];
 
+// PRD F-04 및 보안 규격에 맞춘 Zod 스키마 정의
+export const linkFormSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .min(1, "링크 URL 주소를 입력해주세요.")
+    .refine((val) => !/\s/.test(val), "URL 주소에 공백이 포함될 수 없어요.")
+    .refine((val) => {
+      const lower = val.toLowerCase();
+      return (
+        !lower.startsWith("javascript:") &&
+        !lower.startsWith("data:") &&
+        !lower.startsWith("vbscript:") &&
+        !lower.startsWith("file:")
+      );
+    }, "보안상 허용되지 않는 안전하지 않은 URL이에요.")
+    .max(2048, "URL 주소는 최대 2,048자 이하로 입력해주세요.")
+    .refine((val) => {
+      const lower = val.toLowerCase();
+      if (lower.startsWith("mailto:")) {
+        const email = val.slice(7);
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+      try {
+        const target =
+          lower.startsWith("http://") || lower.startsWith("https://")
+            ? val
+            : `https://${val}`;
+        const parsed = new URL(target);
+        return Boolean(
+          parsed.hostname &&
+            parsed.hostname.includes(".") &&
+            !parsed.hostname.endsWith(".")
+        );
+      } catch {
+        return false;
+      }
+    }, "올바른 웹 주소 형식(예: https://example.com)을 입력해주세요."),
+  title: z
+    .string()
+    .trim()
+    .min(1, "링크 제목을 입력해주세요.")
+    .max(60, "제목은 최대 60자까지 입력 가능해요."),
+  subtitle: z
+    .string()
+    .max(100, "상세 설명은 최대 100자까지 입력 가능해요.")
+    .optional()
+    .or(z.literal("")),
+  icon: z.string(),
+  badge: z
+    .string()
+    .max(15, "뱃지 라벨은 최대 15자까지 입력 가능해요.")
+    .optional()
+    .or(z.literal("")),
+});
+
+export type LinkFormValues = z.infer<typeof linkFormSchema>;
+
 // PRD SC-U02 스마트 OGP 메타데이터 감지 모킹 함수 (Phase 0 로컬 전용)
 function detectUrlMetadata(url: string) {
   const cleanUrl = url.trim().toLowerCase();
@@ -30,7 +101,11 @@ function detectUrlMetadata(url: string) {
 
   if (cleanUrl.includes("github.com")) {
     const rawParts = url.trim().split("github.com/")[1]?.split("/") || [];
-    const repo = rawParts[1] ? `GitHub - ${rawParts[1]}` : rawParts[0] ? `GitHub (@${rawParts[0]})` : "GitHub 프로필";
+    const repo = rawParts[1]
+      ? `GitHub - ${rawParts[1]}`
+      : rawParts[0]
+      ? `GitHub (@${rawParts[0]})`
+      : "GitHub 프로필";
     return {
       title: repo,
       icon: "🐙",
@@ -72,7 +147,9 @@ function detectUrlMetadata(url: string) {
     };
   }
   if (cleanUrl.includes("instagram.com")) {
-    const handle = url.trim().split("instagram.com/")[1]?.split("/")[0]?.replace("@", "") || "";
+    const handle =
+      url.trim().split("instagram.com/")[1]?.split("/")[0]?.replace("@", "") ||
+      "";
     return {
       title: handle ? `@${handle} 인스타그램` : "공식 인스타그램",
       icon: "📷",
@@ -99,92 +176,234 @@ function detectUrlMetadata(url: string) {
 
   // 기본 일반 도메인 처리
   try {
-    const parsed = new URL(cleanUrl.startsWith("http") ? cleanUrl : `https://${cleanUrl}`);
+    const parsed = new URL(
+      cleanUrl.startsWith("http") ? cleanUrl : `https://${cleanUrl}`
+    );
     const host = parsed.hostname.replace(/^www\./, "");
-    return {
-      title: `${host} 바로가기`,
-      icon: "🔗",
-      badge: "Link",
-      subtitle: `${host} 공식 페이지`,
-    };
+    if (host && host.includes(".")) {
+      return {
+        title: `${host} 바로가기`,
+        icon: "🔗",
+        badge: "Link",
+        subtitle: `${host} 공식 페이지`,
+      };
+    }
+    return null;
   } catch {
     return null;
   }
 }
 
-export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps) {
-  const [url, setUrl] = useState("");
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [icon, setIcon] = useState("🔗");
-  const [badge, setBadge] = useState("");
-  const [isSmartFilled, setIsSmartFilled] = useState(false);
-  const [errors, setErrors] = useState<{ url?: string; title?: string }>({});
+// 올바른 형식의 웹 주소인지 엄격하게 검증하는 헬퍼 함수
+export function isValidWebUrl(urlStr: string): boolean {
+  if (!urlStr) return false;
+  const trimmed = urlStr.trim();
+  if (!trimmed || trimmed.length < 4) return false;
+  if (/\s/.test(trimmed)) return false;
+  const lower = trimmed.toLowerCase();
+  if (
+    lower.startsWith("javascript:") ||
+    lower.startsWith("data:") ||
+    lower.startsWith("vbscript:") ||
+    lower.startsWith("file:")
+  ) {
+    return false;
+  }
+  if (lower.startsWith("mailto:")) {
+    const email = trimmed.slice(7);
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+  try {
+    const target =
+      lower.startsWith("http://") || lower.startsWith("https://")
+        ? trimmed
+        : `https://${trimmed}`;
+    const parsed = new URL(target);
+    if (
+      !parsed.hostname ||
+      !parsed.hostname.includes(".") ||
+      parsed.hostname.startsWith(".") ||
+      parsed.hostname.endsWith(".") ||
+      parsed.hostname.length < 4
+    ) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-  const resetForm = () => {
-    setUrl("");
-    setTitle("");
-    setSubtitle("");
-    setIcon("🔗");
-    setBadge("");
-    setIsSmartFilled(false);
-    setErrors({});
-  };
+export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps) {
+  const [isSmartFilled, setIsSmartFilled] = useState(false);
+
+  // React Hook Form 설정 (Zod Resolver 연결 및 실시간 onChange 검증)
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    reset,
+    trigger,
+    setError,
+    clearErrors,
+    setFocus,
+    formState: { errors, touchedFields },
+  } = useForm<LinkFormValues>({
+    resolver: zodResolver(linkFormSchema),
+    defaultValues: {
+      url: "",
+      title: "",
+      subtitle: "",
+      icon: "🔗",
+      badge: "",
+    },
+    mode: "onChange",
+  });
+
+  const urlValue = useWatch({ control, name: "url" }) || "";
+  const titleValue = useWatch({ control, name: "title" }) || "";
+  const subtitleValue = useWatch({ control, name: "subtitle" }) || "";
+  const iconValue = useWatch({ control, name: "icon" }) || "🔗";
+  const badgeValue = useWatch({ control, name: "badge" }) || "";
 
   const handleClose = () => {
-    resetForm();
+    reset({
+      url: "",
+      title: "",
+      subtitle: "",
+      icon: "🔗",
+      badge: "",
+    });
+    setIsSmartFilled(false);
     onClose();
   };
 
+  // URL 입력 변경 시 처리: 주소만 입력 중이고 제목이 비어있으면 제목 경고 표시
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newUrl = e.target.value;
-    setUrl(newUrl);
-    if (errors.url) {
-      setErrors((prev) => ({ ...prev, url: undefined }));
+    setValue("url", newUrl, { shouldValidate: true, shouldTouch: true });
+
+    if (!newUrl.trim()) {
+      setError("url", {
+        type: "manual",
+        message: "링크 URL 주소를 입력해주세요.",
+      });
     }
 
-    // 스마트 OGP 메타데이터 자동 감지 (SC-U02)
+    // 스마트 OGP 감지
     const detected = detectUrlMetadata(newUrl);
     if (detected) {
       setIsSmartFilled(true);
-      // 제목이 비어있거나 이전에 스마트 채움된 상태면 자동 갱신
-      setTitle((prev) => (!prev || isSmartFilled ? detected.title : prev));
-      setSubtitle((prev) => (!prev || isSmartFilled ? detected.subtitle : prev));
-      setIcon((prev) => (prev === "🔗" || isSmartFilled ? detected.icon : prev));
-      setBadge((prev) => (!prev || isSmartFilled ? detected.badge : prev));
+      setValue("title", detected.title, { shouldValidate: true, shouldTouch: true });
+      setValue("subtitle", detected.subtitle, { shouldValidate: true });
+      setValue("icon", detected.icon);
+      setValue("badge", detected.badge, { shouldValidate: true });
+      clearErrors("title");
+    } else {
+      // 스마트 감지가 되지 않는 주소이고 제목이 아직 비어있다면 제목 입력 경고 즉시 표시
+      if (!titleValue.trim()) {
+        setError("title", {
+          type: "manual",
+          message: "링크 제목을 입력해주세요.",
+        });
+      }
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // 제목 입력 변경 시 처리: 제목만 입력 중이고 URL이 비어있으면 URL 경고 표시
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value.slice(0, 60);
+    setValue("title", newTitle, { shouldValidate: true, shouldTouch: true });
 
-    const trimmedUrl = url.trim();
-    const trimmedTitle = title.trim();
-
-    const newErrors: { url?: string; title?: string } = {};
-
-    if (!trimmedUrl) {
-      newErrors.url = "링크 URL을 입력해주세요.";
+    if (!newTitle.trim()) {
+      setError("title", {
+        type: "manual",
+        message: "링크 제목을 입력해주세요.",
+      });
     } else {
-      // URL 형식 검사
-      const isValidFormat =
-        trimmedUrl.startsWith("http://") ||
-        trimmedUrl.startsWith("https://") ||
-        trimmedUrl.startsWith("mailto:") ||
-        trimmedUrl.includes(".");
-      if (!isValidFormat) {
-        newErrors.url = "올바른 URL 형식(예: https://example.com)을 입력해주세요.";
-      }
+      clearErrors("title");
     }
 
+    // 제목만 입력하고 URL이 아직 비어있으면 URL 경고 메시지 즉각 노출
+    if (!urlValue.trim()) {
+      setError("url", {
+        type: "manual",
+        message: "링크 URL 주소를 입력해주세요.",
+      });
+    }
+  };
+
+  // URL 필드 포커스 아웃 시
+  const handleUrlBlur = () => {
+    if (!urlValue.trim()) {
+      setError("url", {
+        type: "manual",
+        message: "링크 URL 주소를 입력해주세요.",
+      });
+    }
+    if (!titleValue.trim()) {
+      setError("title", {
+        type: "manual",
+        message: "링크 제목을 입력해주세요.",
+      });
+    }
+  };
+
+  // 제목 필드 포커스 아웃 시
+  const handleTitleBlur = () => {
+    if (!titleValue.trim()) {
+      setError("title", {
+        type: "manual",
+        message: "링크 제목을 입력해주세요.",
+      });
+    }
+    if (!urlValue.trim()) {
+      setError("url", {
+        type: "manual",
+        message: "링크 URL 주소를 입력해주세요.",
+      });
+    }
+  };
+
+  // 폼 제출 핸들러 (제목만 입력 또는 주소만 입력 시 모두 확실하게 경고 노출)
+  const onSubmit = (data: LinkFormValues) => {
+    const trimmedUrl = (data.url || "").trim();
+    const trimmedTitle = (data.title || "").trim();
+
+    let hasError = false;
+
+    // URL 검증
+    if (!trimmedUrl) {
+      setError("url", {
+        type: "manual",
+        message: "링크 URL 주소를 입력해주세요.",
+      });
+      hasError = true;
+    } else if (!isValidWebUrl(trimmedUrl)) {
+      setError("url", {
+        type: "manual",
+        message: "올바른 웹 주소 형식(예: https://example.com)을 입력해주세요.",
+      });
+      hasError = true;
+    }
+
+    // 제목 검증
     if (!trimmedTitle) {
-      newErrors.title = "링크 제목을 입력해주세요.";
-    } else if (trimmedTitle.length > 60) {
-      newErrors.title = "제목은 최대 60자까지 입력 가능해요.";
+      setError("title", {
+        type: "manual",
+        message: "링크 제목을 입력해주세요.",
+      });
+      hasError = true;
     }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    // 하나라도 누락 또는 오류 시 에러 표시 및 차단
+    if (hasError) {
+      if (!trimmedUrl || !isValidWebUrl(trimmedUrl)) {
+        setFocus("url");
+      } else {
+        setFocus("title");
+      }
       return;
     }
 
@@ -201,15 +420,19 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
     onAddLink({
       url: finalUrl,
       title: trimmedTitle,
-      subtitle: subtitle.trim() || undefined,
-      icon: icon || "🔗",
-      badge: badge.trim() || undefined,
+      subtitle: data.subtitle?.trim() || undefined,
+      icon: data.icon || "🔗",
+      badge: data.badge?.trim() || undefined,
       is_active: true,
       sort_order: 1, // 최상단에 배치
     });
 
     handleClose();
   };
+
+  const { ref: urlRegisterRef, ...urlRegisterProps } = register("url");
+  const { ref: titleRegisterRef, ...titleRegisterProps } = register("title");
+  const { ref: subtitleRegisterRef, ...subtitleRegisterProps } = register("subtitle");
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -228,7 +451,7 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           {/* 1. URL Input Field with Smart OGP Hint */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
@@ -245,33 +468,47 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
             </div>
             <div className="relative">
               <Input
+                {...urlRegisterProps}
+                ref={urlRegisterRef}
                 id="link-url"
                 type="text"
-                value={url}
+                value={urlValue}
                 onChange={handleUrlChange}
+                onBlur={handleUrlBlur}
                 placeholder="https://notion.so/... 또는 https://github.com/..."
-                className={`pl-9 text-[13px] ${
-                  errors.url ? "border-[#F04452] focus-visible:border-[#F04452]" : ""
+                className={`pl-9 pr-9 text-[13px] ${
+                  errors.url
+                    ? "border-[#F04452] focus-visible:border-[#F04452] focus-visible:ring-[#F04452]/20"
+                    : ""
                 }`}
                 autoFocus
               />
               <Globe className="w-4 h-4 text-[#8B95A1] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              {url && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUrl("");
-                    setIsSmartFilled(false);
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B95A1] hover:text-[#191F28] p-0.5 rounded-full cursor-pointer"
-                  aria-label="URL 지우기"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                {touchedFields.url && !errors.url && urlValue && (
+                  <CheckCircle2 className="w-4 h-4 text-[#2B9D5B]" />
+                )}
+                {urlValue && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setValue("url", "", { shouldValidate: true, shouldTouch: true });
+                      setIsSmartFilled(false);
+                      trigger("url");
+                    }}
+                    className="text-[#8B95A1] hover:text-[#191F28] p-0.5 rounded-full cursor-pointer"
+                    aria-label="URL 지우기"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
             {errors.url ? (
-              <p className="text-[12px] text-[#F04452] font-medium mt-0.5">{errors.url}</p>
+              <p className="text-[12px] text-[#F04452] font-medium mt-1 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{errors.url.message}</span>
+              </p>
             ) : (
               <p className="text-[11px] text-[#8B95A1]">
                 GitHub, Notion, Velog 등 입력 시 제목과 아이콘이 자동 추천돼요.
@@ -286,43 +523,84 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
                 <span>링크 제목</span>
                 <span className="text-[#F04452]">*</span>
               </label>
-              <span className="text-[11px] text-[#8B95A1] tabular-nums">
-                {title.length}/60
+              <span
+                className={`text-[11px] tabular-nums font-medium ${
+                  titleValue.length >= 60
+                    ? "text-[#F04452]"
+                    : titleValue.length >= 50
+                    ? "text-[#FF9B00]"
+                    : "text-[#8B95A1]"
+                }`}
+              >
+                {titleValue.length}/60
               </span>
             </div>
             <Input
+              {...titleRegisterProps}
+              ref={titleRegisterRef}
               id="link-title"
               type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value.slice(0, 60));
-                if (errors.title) {
-                  setErrors((prev) => ({ ...prev, title: undefined }));
-                }
-              }}
+              value={titleValue}
+              onChange={handleTitleChange}
+              onBlur={handleTitleBlur}
               placeholder="예: 나만의 개발 포트폴리오"
               className={`text-[13px] ${
-                errors.title ? "border-[#F04452] focus-visible:border-[#F04452]" : ""
+                errors.title
+                  ? "border-[#F04452] focus-visible:border-[#F04452] focus-visible:ring-[#F04452]/20"
+                  : ""
               }`}
             />
             {errors.title && (
-              <p className="text-[12px] text-[#F04452] font-medium mt-0.5">{errors.title}</p>
+              <p className="text-[12px] text-[#F04452] font-medium mt-1 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{errors.title.message}</span>
+              </p>
             )}
           </div>
 
           {/* 3. Subtitle / Description Input Field */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="link-subtitle" className="text-[13px] font-bold text-[#191F28]">
-              상세 설명 <span className="text-[#8B95A1] font-normal text-[12px]">(선택)</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="link-subtitle" className="text-[13px] font-bold text-[#191F28]">
+                상세 설명 <span className="text-[#8B95A1] font-normal text-[12px]">(선택)</span>
+              </label>
+              <span
+                className={`text-[11px] tabular-nums font-medium ${
+                  subtitleValue.length >= 100
+                    ? "text-[#F04452]"
+                    : subtitleValue.length >= 80
+                    ? "text-[#FF9B00]"
+                    : "text-[#8B95A1]"
+                }`}
+              >
+                {subtitleValue.length}/100
+              </span>
+            </div>
             <Input
+              {...subtitleRegisterProps}
+              ref={subtitleRegisterRef}
               id="link-subtitle"
               type="text"
-              value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value.slice(0, 100))}
+              value={subtitleValue}
+              onChange={(e) => {
+                setValue("subtitle", e.target.value.slice(0, 100), {
+                  shouldValidate: touchedFields.subtitle,
+                  shouldTouch: true,
+                });
+              }}
               placeholder="예: 프로젝트 상세 회고와 기술 스택 모음집"
-              className="text-[13px]"
+              className={`text-[13px] ${
+                errors.subtitle
+                  ? "border-[#F04452] focus-visible:border-[#F04452] focus-visible:ring-[#F04452]/20"
+                  : ""
+              }`}
             />
+            {errors.subtitle && (
+              <p className="text-[12px] text-[#F04452] font-medium mt-1 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{errors.subtitle.message}</span>
+              </p>
+            )}
           </div>
 
           {/* 4. Icon Selector (Emoji Palette + Custom) */}
@@ -332,16 +610,16 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
                 <Smile className="w-3.5 h-3.5 text-[#4E5968]" />
                 <span>대표 아이콘</span>
               </label>
-              <span className="text-[12px] text-[#4E5968]">현재: {icon}</span>
+              <span className="text-[12px] text-[#4E5968]">현재: {iconValue}</span>
             </div>
             <div className="flex items-center gap-1.5 flex-wrap p-2.5 bg-[#F9FAFB] rounded-xl border border-[#E5E8EB]">
               {PRESET_EMOJIS.map((emoji) => (
                 <button
                   key={emoji}
                   type="button"
-                  onClick={() => setIcon(emoji)}
+                  onClick={() => setValue("icon", emoji, { shouldTouch: true })}
                   className={`w-8 h-8 rounded-lg flex items-center justify-center text-[17px] transition-all cursor-pointer ${
-                    icon === emoji
+                    iconValue === emoji
                       ? "bg-white shadow-xs border border-[#3182F6] scale-110"
                       : "hover:bg-[#E5E8EB]/60 active:scale-95"
                   }`}
@@ -354,9 +632,9 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
                 <input
                   type="text"
                   maxLength={2}
-                  value={PRESET_EMOJIS.includes(icon) ? "" : icon}
+                  value={PRESET_EMOJIS.includes(iconValue) ? "" : iconValue}
                   onChange={(e) => {
-                    if (e.target.value) setIcon(e.target.value);
+                    if (e.target.value) setValue("icon", e.target.value);
                   }}
                   placeholder="직접"
                   className="w-11 h-8 rounded-lg bg-white border border-[#E5E8EB] text-center text-[13px] focus:outline-hidden focus:border-[#3182F6]"
@@ -374,10 +652,10 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
                 <span>뱃지 라벨</span>
                 <span className="text-[#8B95A1] font-normal text-[12px]">(선택)</span>
               </label>
-              {badge && (
+              {badgeValue && (
                 <button
                   type="button"
-                  onClick={() => setBadge("")}
+                  onClick={() => setValue("badge", "", { shouldTouch: true })}
                   className="text-[11px] text-[#8B95A1] hover:text-[#191F28] cursor-pointer"
                 >
                   지우기
@@ -386,12 +664,17 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
               {PRESET_BADGES.map((preset) => {
-                const isSelected = badge === preset;
+                const isSelected = badgeValue === preset;
                 return (
                   <button
                     key={preset}
                     type="button"
-                    onClick={() => setBadge(isSelected ? "" : preset)}
+                    onClick={() =>
+                      setValue("badge", isSelected ? "" : preset, {
+                        shouldTouch: true,
+                        shouldValidate: true,
+                      })
+                    }
                     className={`px-2.5 py-1 rounded-full text-[12px] font-semibold transition-all cursor-pointer ${
                       isSelected
                         ? "bg-[#3182F6] text-white shadow-2xs"
@@ -403,6 +686,12 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
                 );
               })}
             </div>
+            {errors.badge && (
+              <p className="text-[12px] text-[#F04452] font-medium mt-1 flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{errors.badge.message}</span>
+              </p>
+            )}
           </div>
 
           {/* 6. Live Card Preview (TDS Card Style) */}
@@ -411,21 +700,25 @@ export function AddLinkDialog({ isOpen, onClose, onAddLink }: AddLinkDialogProps
             <div className="w-full rounded-2xl border border-[#E5E8EB] bg-[#F9FAFB] p-3.5 transition-all">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-2xs border border-[#E5E8EB]/50">
-                  <span>{icon || "🔗"}</span>
+                  <span>{iconValue || "🔗"}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <p className={`text-[15px] font-semibold truncate ${title ? "text-[#191F28]" : "text-[#B0B8C1]"}`}>
-                      {title || "새 링크 제목"}
+                    <p
+                      className={`text-[15px] font-semibold truncate ${
+                        titleValue ? "text-[#191F28]" : "text-[#B0B8C1]"
+                      }`}
+                    >
+                      {titleValue || "새 링크 제목"}
                     </p>
-                    {badge && (
+                    {badgeValue && (
                       <Badge variant="brand" className="text-[10px] px-1.5 py-0">
-                        {badge}
+                        {badgeValue}
                       </Badge>
                     )}
                   </div>
                   <p className="mt-0.5 text-[12px] text-[#6B7684] truncate">
-                    {subtitle || (url ? url : "링크 설명이 여기에 표시돼요")}
+                    {subtitleValue || (urlValue ? urlValue : "링크 설명이 여기에 표시돼요")}
                   </p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-[#B0B8C1] shrink-0" />
