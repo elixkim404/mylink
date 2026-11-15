@@ -2,11 +2,12 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UserProfileDoc } from "../types/mylink";
-import { getUserProfile, updateUserProfile } from "./userProfile";
+import { getUserProfile, updateUserProfile, getUserProfileByDisplayName } from "./userProfile";
 
 export const profileQueryKeys = {
   all: ["profile"] as const,
   user: (userId?: string) => ["profile", userId || "anonymous"] as const,
+  byDisplayName: (displayName?: string) => ["profile", "byDisplayName", displayName || ""] as const,
 };
 
 /**
@@ -20,6 +21,20 @@ export function useProfileQuery(userId?: string) {
       return getUserProfile(userId);
     },
     enabled: !!userId,
+  });
+}
+
+/**
+ * displayName으로 Firestore 유저 프로필을 검색 및 캐싱하는 쿼리 훅
+ */
+export function useProfileByDisplayNameQuery(displayName?: string) {
+  return useQuery({
+    queryKey: profileQueryKeys.byDisplayName(displayName),
+    queryFn: () => {
+      if (!displayName) return null;
+      return getUserProfileByDisplayName(displayName);
+    },
+    enabled: !!displayName,
   });
 }
 

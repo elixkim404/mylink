@@ -17,6 +17,7 @@ interface QRCodeModalProps {
   onClose: () => void;
   displayName: string;
   handle: string;
+  url?: string;
   onCopySuccess: () => void;
 }
 
@@ -25,6 +26,7 @@ export function QRCodeModal({
   onClose,
   displayName,
   handle,
+  url,
   onCopySuccess,
 }: QRCodeModalProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
@@ -32,9 +34,10 @@ export function QRCodeModal({
 
   // 스마트폰으로 스캔 시 접속할 실제 퍼블릭 URL
   const profileUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/@${handle}`
-      : `https://mylink.app/@${handle}`;
+    url ||
+    (typeof window !== "undefined"
+      ? `${window.location.origin}/${encodeURIComponent(displayName || handle)}`
+      : `https://mylink.app/${encodeURIComponent(displayName || handle)}`);
 
   // 모달이 열리거나 URL이 변경될 때 실제 스캔 가능한 QR 코드 생성
   useEffect(() => {

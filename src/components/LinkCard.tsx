@@ -34,6 +34,7 @@ import {
 
 interface LinkCardProps {
   link: LinkItem;
+  readOnly?: boolean;
   onLinkClick?: (link: LinkItem) => void;
   onUpdateLink?: (
     linkId: string,
@@ -44,6 +45,7 @@ interface LinkCardProps {
 
 export function LinkCard({
   link,
+  readOnly = false,
   onLinkClick,
   onUpdateLink,
   onRequestDelete,
@@ -525,32 +527,38 @@ export function LinkCard({
           </div>
         </a>
 
-        {/* 항상 표시되는 액션 버튼 영역 (수정 / 삭제) */}
-        <div className="flex items-center gap-1 shrink-0 pt-0.5">
-          {/* 수정 버튼: 항상 표시 */}
-          <button
-            type="button"
-            onClick={handleStartEdit}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-[#4E5968] bg-[#F2F4F6] hover:bg-[#E5E8EB] hover:text-[#191F28] active:scale-95 transition-all cursor-pointer shadow-2xs"
-            title="링크 수정 (인라인 편집)"
-            aria-label="링크 수정"
-          >
-            <Pencil className="w-3.5 h-3.5 text-[#4E5968]" />
-            <span>수정</span>
-          </button>
+        {/* 액션 버튼 영역 (수정 / 삭제 - readOnly가 아니고 핸들러가 있을 때만 노출) */}
+        {!readOnly && (onUpdateLink || onRequestDelete) && (
+          <div className="flex items-center gap-1 shrink-0 pt-0.5">
+            {/* 수정 버튼 */}
+            {onUpdateLink && (
+              <button
+                type="button"
+                onClick={handleStartEdit}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-[#4E5968] bg-[#F2F4F6] hover:bg-[#E5E8EB] hover:text-[#191F28] active:scale-95 transition-all cursor-pointer shadow-2xs"
+                title="링크 수정 (인라인 편집)"
+                aria-label="링크 수정"
+              >
+                <Pencil className="w-3.5 h-3.5 text-[#4E5968]" />
+                <span>수정</span>
+              </button>
+            )}
 
-          {/* 삭제 버튼: 항상 표시 */}
-          <button
-            type="button"
-            onClick={handleDeleteClick}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-[#F04452] bg-[#FFF0F2] hover:bg-[#FFE0E4] active:scale-95 transition-all cursor-pointer shadow-2xs"
-            title="링크 삭제"
-            aria-label="링크 삭제"
-          >
-            <Trash2 className="w-3.5 h-3.5 text-[#F04452]" />
-            <span>삭제</span>
-          </button>
-        </div>
+            {/* 삭제 버튼 */}
+            {onRequestDelete && (
+              <button
+                type="button"
+                onClick={handleDeleteClick}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-[#F04452] bg-[#FFF0F2] hover:bg-[#FFE0E4] active:scale-95 transition-all cursor-pointer shadow-2xs"
+                title="링크 삭제"
+                aria-label="링크 삭제"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-[#F04452]" />
+                <span>삭제</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

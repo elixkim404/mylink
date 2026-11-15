@@ -35,6 +35,58 @@ export async function getUserProfile(uid: string): Promise<UserProfileDoc | null
 }
 
 /**
+ * displayName으로 유저 프로필 문서를 검색합니다.
+ * - 1차: display_name 필드로 검색
+ * - 2차: handle 필드로 검색 (fallback)
+ */
+export async function getUserProfileByDisplayName(
+  displayName: string
+): Promise<UserProfileDoc | null> {
+  const cleanName = displayName
+    ? decodeURIComponent(displayName).trim().replace(/^@+/, "")
+    : "";
+  if (!cleanName) return null;
+
+  try {
+    const { firestore, db } = await getFirestoreContext();
+    const { collection, query, where, getDocs, limit } = firestore;
+
+    const usersRef = collection(db, "users");
+
+    // 1. display_name 일치 검색
+    const nameQuery = query(usersRef, where("display_name", "==", cleanName), limit(1));
+    const snap = await getDocs(nameQuery);
+
+    if (!snap.empty) {
+      const docSnap = snap.docs[0];
+      const docData = docSnap.data() as UserProfileDoc;
+      return {
+        ...docData,
+        uid: docData.uid || docSnap.id,
+      };
+    }
+
+    // 2. handle 일치 검색 (대소문자/소셜 계정 고려 fallback)
+    const handleQuery = query(usersRef, where("handle", "==", cleanName), limit(1));
+    const handleSnap = await getDocs(handleQuery);
+
+    if (!handleSnap.empty) {
+      const docSnap = handleSnap.docs[0];
+      const docData = docSnap.data() as UserProfileDoc;
+      return {
+        ...docData,
+        uid: docData.uid || docSnap.id,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.warn(`유저 검색(${cleanName}) 실패:`, error);
+    return null;
+  }
+}
+
+/**
  * 구글 로그인 완료 시 users/(user.uid) 경로에 유저 정보를 동기화합니다.
  * 문서가 없으면 초기 유저 정보를 등록하고, 있으면 lastLoginAt을 업데이트합니다.
  */

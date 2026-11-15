@@ -33,17 +33,32 @@ function GithubIcon({ className = "w-4 h-4" }: { className?: string }) {
 
 interface ProfileHeroProps {
   profile: ProfileData;
+  isOwner?: boolean;
   onCopyHandle: () => void;
   onShowToast: (msg: string) => void;
 }
 
-export function ProfileHero({ profile, onCopyHandle }: ProfileHeroProps) {
+export function ProfileHero({ profile, isOwner = true, onCopyHandle }: ProfileHeroProps) {
   return (
     <Card className="p-6 flex flex-col items-center text-center relative overflow-hidden">
-      {/* 1. Avatar (88px x 88px) with subtle link to /edit */}
+      {/* 1. Avatar (88px x 88px) */}
       <div className="relative mb-3.5 group">
-        <Link href="/edit" title="프로필 수정하러 가기" className="block cursor-pointer">
-          <Avatar className="w-[88px] h-[88px] border-2 border-[#E5E8EB] shadow-xs bg-[#F9FAFB] transition-transform group-hover:scale-105">
+        {isOwner ? (
+          <Link href="/edit" title="프로필 수정하러 가기" className="block cursor-pointer">
+            <Avatar className="w-[88px] h-[88px] border-2 border-[#E5E8EB] shadow-xs bg-[#F9FAFB] transition-transform group-hover:scale-105">
+              <AvatarImage
+                src={profile.avatar_url || "/images/avatar.svg"}
+                alt={profile.display_name}
+                className="w-full h-full object-cover"
+              />
+              <AvatarFallback>{profile.display_name.slice(0, 2)}</AvatarFallback>
+            </Avatar>
+            <div className="absolute bottom-0 right-0 w-6 h-6 bg-[#3182F6] text-white rounded-full flex items-center justify-center shadow-xs border-2 border-white group-hover:scale-110 transition-transform">
+              <Pencil className="w-3 h-3 stroke-[2.5]" />
+            </div>
+          </Link>
+        ) : (
+          <Avatar className="w-[88px] h-[88px] border-2 border-[#E5E8EB] shadow-xs bg-[#F9FAFB]">
             <AvatarImage
               src={profile.avatar_url || "/images/avatar.svg"}
               alt={profile.display_name}
@@ -51,10 +66,7 @@ export function ProfileHero({ profile, onCopyHandle }: ProfileHeroProps) {
             />
             <AvatarFallback>{profile.display_name.slice(0, 2)}</AvatarFallback>
           </Avatar>
-          <div className="absolute bottom-0 right-0 w-6 h-6 bg-[#3182F6] text-white rounded-full flex items-center justify-center shadow-xs border-2 border-white group-hover:scale-110 transition-transform">
-            <Pencil className="w-3 h-3 stroke-[2.5]" />
-          </div>
-        </Link>
+        )}
       </div>
 
       {/* 2. Name & Badge Row */}
@@ -124,17 +136,29 @@ export function ProfileHero({ profile, onCopyHandle }: ProfileHeroProps) {
         )}
       </div>
 
-      {/* 6. Profile Edit CTA Button (Links to /edit) */}
-      <Link href="/edit" className="w-full" title="마이페이지로 이동">
-        <Button
-          variant="secondary"
-          size="sm"
-          className="w-full rounded-xl text-[12px] font-semibold text-[#4E5968] hover:text-[#191F28] gap-1.5 h-8.5 cursor-pointer"
-        >
-          <Pencil className="w-3.5 h-3.5 text-[#8B95A1]" />
-          <span>마이페이지에서 수정하기</span>
-        </Button>
-      </Link>
+      {/* 6. Profile Edit or Create CTA Button */}
+      {isOwner ? (
+        <Link href="/edit" className="w-full" title="마이페이지로 이동">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full rounded-xl text-[12px] font-semibold text-[#4E5968] hover:text-[#191F28] gap-1.5 h-8.5 cursor-pointer"
+          >
+            <Pencil className="w-3.5 h-3.5 text-[#8B95A1]" />
+            <span>마이페이지에서 수정하기</span>
+          </Button>
+        </Link>
+      ) : (
+        <Link href="/" className="w-full" title="MyLink 홈으로 이동">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full rounded-xl text-[12px] font-semibold text-[#3182F6] hover:bg-[#E8F3FF] gap-1.5 h-8.5 cursor-pointer"
+          >
+            <span>나도 MyLink 만들기 🚀</span>
+          </Button>
+        </Link>
+      )}
     </Card>
   );
 }
