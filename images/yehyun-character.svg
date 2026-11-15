@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EBF4FF" />
+      <stop offset="100%" stop-color="#F2F4F8" />
+    </linearGradient>
+
+    <!-- Skin Shadow & Tone Gradients -->
+    <linearGradient id="skinTone" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF5F0" />
+      <stop offset="100%" stop-color="#FFE7DC" />
+    </linearGradient>
+    <linearGradient id="skinShadow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F7D8CA" />
+      <stop offset="100%" stop-color="#EEC5B3" />
+    </linearGradient>
+
+    <!-- Hair Gradient -->
+    <linearGradient id="hairGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2D2B32" />
+      <stop offset="40%" stop-color="#201E24" />
+      <stop offset="100%" stop-color="#141317" />
+    </linearGradient>
+
+    <!-- Hair Highlight -->
+    <linearGradient id="hairHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2D2B32" stop-opacity="0" />
+      <stop offset="50%" stop-color="#555160" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#2D2B32" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Clothes Gradient -->
+    <linearGradient id="clothesGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2B2D35" />
+      <stop offset="100%" stop-color="#1B1C22" />
+    </linearGradient>
+
+    <!-- Blush Radial -->
+    <radialGradient id="blushGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF8A8A" stop-opacity="0.55" />
+      <stop offset="70%" stop-color="#FF9E9E" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#FFA8A8" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Eye Gradient -->
+    <linearGradient id="eyeIris" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#231F20" />
+      <stop offset="60%" stop-color="#362C27" />
+      <stop offset="100%" stop-color="#54433A" />
+    </linearGradient>
+
+    <!-- Soft Filter -->
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Circular Base Container -->
+  <circle cx="120" cy="120" r="118" fill="url(#bgGrad)" stroke="#E5E8EB" stroke-width="2" />
+
+  <!-- Ambient Light Sparkles in Background -->
+  <circle cx="36" cy="48" r="3" fill="#3182F6" opacity="0.3" />
+  <circle cx="204" cy="56" r="2.5" fill="#3182F6" opacity="0.3" />
+  <path d="M190,36 Q192,42 198,44 Q192,46 190,52 Q188,46 182,44 Q188,42 190,36 Z" fill="#FFC846" opacity="0.6" />
+  <path d="M46,84 Q47,88 51,89 Q47,90 46,94 Q45,90 41,89 Q45,88 46,84 Z" fill="#FFC846" opacity="0.5" />
+
+  <!-- Back Hair (Long dark hair flowing past shoulders) -->
+  <path d="M52,110 C46,145 50,195 56,236 L184,236 C190,195 194,145 188,110 C184,65 162,42 120,42 C78,42 56,65 52,110 Z" fill="url(#hairGrad)" />
+
+  <!-- Shoulders & Dark Knit Clothes -->
+  <path d="M38,212 C40,190 75,182 120,182 C165,182 200,190 202,212 L208,240 L32,240 Z" fill="url(#clothesGrad)" />
+
+  <!-- Collarbone & Neck -->
+  <path d="M102,168 C102,185 138,185 138,168 L134,150 L106,150 Z" fill="url(#skinShadow)" />
+  <path d="M105,166 C105,182 135,182 135,166 L133,152 L107,152 Z" fill="url(#skinTone)" />
+
+  <!-- Tiny Gold Chain Necklace with Round Pendant -->
+  <path d="M105,178 Q120,198 135,178" stroke="#E6C068" stroke-width="1.8" fill="none" stroke-linecap="round" />
+  <circle cx="120" cy="192" r="3" fill="#E6C068" />
+  <circle cx="120" cy="192" r="1.5" fill="#FFF2B2" />
+
+  <!-- Head Base / Face (Smooth egg-oval shape) -->
+  <ellipse cx="118" cy="122" rx="50" ry="49" fill="url(#skinTone)" />
+
+  <!-- Left Ear & Delicate Gold Stud -->
+  <ellipse cx="69" cy="126" rx="7" ry="11" fill="url(#skinTone)" />
+  <ellipse cx="70" cy="126" rx="4" ry="7" fill="url(#skinShadow)" />
+  <circle cx="68" cy="132" r="2.2" fill="#E6C068" />
+
+  <!-- Long Hair Front Layers (5:5 Center Parted - 예현 시그니처 가르마 스타일) -->
+  <!-- Left Hair Drape -->
+  <path d="M120,48 C108,48 84,64 78,102 C74,124 76,158 82,185 C85,165 87,136 93,118 C97,105 106,86 116,74 C119,70 120,58 120,48 Z" fill="url(#hairGrad)" />
+  <!-- Right Hair Drape -->
+  <path d="M120,48 C132,48 156,64 162,102 C166,124 164,158 158,185 C155,165 153,136 147,118 C143,105 134,86 124,74 C121,70 120,58 120,48 Z" fill="url(#hairGrad)" />
+
+  <!-- Hair Gloss / Highlight Band -->
+  <ellipse cx="120" cy="72" rx="42" ry="7" fill="url(#hairHighlight)" transform="rotate(-2 120 72)" />
+
+  <!-- Soft Lovely Rosy Cheeks (Blush) -->
+  <ellipse cx="94" cy="138" rx="13" ry="8" fill="url(#blushGrad)" />
+  <ellipse cx="144" cy="138" rx="13" ry="8" fill="url(#blushGrad)" />
+
+  <!-- Eyebrows (Natural, Soft Arch) -->
+  <path d="M88,108 Q100,105 107,109" stroke="#3A3537" stroke-width="2.6" stroke-linecap="round" fill="none" />
+  <path d="M131,109 Q138,105 150,108" stroke="#3A3537" stroke-width="2.6" stroke-linecap="round" fill="none" />
+
+  <!-- Double Eyelid Lines -->
+  <path d="M91,116 Q100,113 107,117" stroke="#9C8783" stroke-width="1.2" stroke-linecap="round" fill="none" />
+  <path d="M131,117 Q138,113 147,116" stroke="#9C8783" stroke-width="1.2" stroke-linecap="round" fill="none" />
+
+  <!-- Left Eye -->
+  <g id="leftEye">
+    <!-- Base Iris -->
+    <ellipse cx="99" cy="125" rx="7.5" ry="8.5" fill="url(#eyeIris)" />
+    <!-- Pupil -->
+    <circle cx="99" cy="125" r="4.5" fill="#111113" />
+    <!-- Light Catchers (Sparkle) -->
+    <circle cx="102" cy="122" r="2.8" fill="#FFFFFF" />
+    <circle cx="96.5" cy="128" r="1.4" fill="#FFFFFF" opacity="0.9" />
+    <!-- Upper Eyelash Line -->
+    <path d="M89,122 Q99,117 109,121 Q111,120 112,118" stroke="#1C1A1F" stroke-width="2.8" stroke-linecap="round" fill="none" />
+  </g>
+
+  <!-- Right Eye -->
+  <g id="rightEye">
+    <!-- Base Iris -->
+    <ellipse cx="139" cy="125" rx="7.5" ry="8.5" fill="url(#eyeIris)" />
+    <!-- Pupil -->
+    <circle cx="139" cy="125" r="4.5" fill="#111113" />
+    <!-- Light Catchers (Sparkle) -->
+    <circle cx="142" cy="122" r="2.8" fill="#FFFFFF" />
+    <circle cx="136.5" cy="128" r="1.4" fill="#FFFFFF" opacity="0.9" />
+    <!-- Upper Eyelash Line -->
+    <path d="M129,121 Q139,117 149,122 Q151,120 152,118" stroke="#1C1A1F" stroke-width="2.8" stroke-linecap="round" fill="none" />
+  </g>
+
+  <!-- Cute Subtle Nose -->
+  <path d="M117,133 Q119,136 122,135" stroke="#E2AFA0" stroke-width="2" stroke-linecap="round" fill="none" />
+
+  <!-- Sweet Gentle Smile (Coral Pink Lips) -->
+  <path d="M112,148 Q119,153 126,148" stroke="#FF6B72" stroke-width="2.8" stroke-linecap="round" fill="none" />
+  <!-- Lip Gloss Highlight -->
+  <ellipse cx="119" cy="150" rx="3.5" ry="1.2" fill="#FFA8AD" opacity="0.8" />
+
+  <!-- SIGNATURE POSE: Left Hand Resting Under Cheek / Chin (사진 속 턱 괴는 시그니처 손) -->
+  <g id="chinRestHand">
+    <!-- Arm / Wrist Base -->
+    <path d="M152,176 C156,160 162,148 152,142 C146,139 140,143 142,152 C144,160 148,172 150,188 Z" fill="url(#skinTone)" />
+    <!-- Finger Curves touching cheek gently -->
+    <path d="M145,142 C142,139 135,142 136,148 C137,153 144,152 147,146 Z" fill="url(#skinTone)" />
+    <path d="M150,144 C153,139 158,142 157,148 C155,153 149,152 148,146 Z" fill="url(#skinTone)" />
+    <!-- Finger Shade Lines -->
+    <path d="M141,146 Q146,144 149,147" stroke="#E5B2A3" stroke-width="1.2" stroke-linecap="round" fill="none" />
+
+    <!-- BLACK SPIRAL / TELEPHONE-CORD HAIR TIE BRACELET (손목의 검은색 스프링 머리끈 디테일!) -->
+    <!-- Coil loop 1 -->
+    <ellipse cx="152" cy="180" rx="6" ry="4" stroke="#16161A" stroke-width="3.2" fill="none" transform="rotate(-15 152 180)" />
+    <!-- Coil loop 2 -->
+    <ellipse cx="154" cy="186" rx="6.5" ry="4" stroke="#25252C" stroke-width="3.2" fill="none" transform="rotate(-10 154 186)" />
+    <!-- Coil loop 3 -->
+    <ellipse cx="156" cy="192" rx="6.5" ry="4" stroke="#16161A" stroke-width="3.2" fill="none" transform="rotate(-5 156 192)" />
+    <!-- Coil Highlight dots -->
+    <circle cx="150" cy="179" r="1.2" fill="#5A5B66" />
+    <circle cx="152" cy="185" r="1.2" fill="#5A5B66" />
+  </g>
+
+  <!-- Little Head Sparkle -->
+  <path d="M68,68 Q70,74 76,76 Q70,78 68,84 Q66,78 60,76 Q66,74 68,68 Z" fill="#FFD43F" opacity="0.8" />
+</svg>
