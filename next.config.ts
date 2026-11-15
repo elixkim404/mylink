@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: [
+    "firebase",
+    "@firebase/app",
+    "@firebase/firestore",
+    "@firebase/component",
+    "@firebase/util",
+  ],
 };
 
 export default nextConfig;

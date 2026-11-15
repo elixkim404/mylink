@@ -1,8 +1,5 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
-import { getAnalytics, isSupported, Analytics } from "firebase/analytics";
-import { getAuth, Auth } from "firebase/auth";
-import { getFirestore, Firestore } from "firebase/firestore";
-import { getStorage, FirebaseStorage } from "firebase/storage";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
+import type { Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,25 +11,35 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// 중복 초기화 방지: 이미 초기화된 앱이 있으면 재사용
-const app: FirebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+let app: FirebaseApp | undefined;
 
-// 주요 서비스 인스턴스
-const auth: Auth = getAuth(app);
-const db: Firestore = getFirestore(app);
-const storage: FirebaseStorage = getStorage(app);
-
-// Analytics는 브라우저(Client-side) 환경에서만 지원됨
-let analytics: Analytics | null = null;
-export const getFirebaseAnalytics = async (): Promise<Analytics | null> => {
-  if (typeof window !== "undefined" && !analytics) {
-    const supported = await isSupported();
-    if (supported) {
-      analytics = getAnalytics(app);
-    }
+export function getFirebaseApp(): FirebaseApp {
+  if (!app) {
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   }
-  return analytics;
-};
+  return app;
+}
 
-export { app, auth, db, storage, analytics };
-export default app;
+let dbInstance: Firestore | undefined;
+
+export async function getFirebaseDb(): Promise<Firestore> {
+  if (!dbInstance) {
+    const { getFirestore } = await import("firebase/firestore");
+    dbInstance = getFirestore(getFirebaseApp());
+  }
+  return dbInstance;
+}
+
+let authInstance: import("firebase/auth").Auth | undefined;
+
+export async function getFirebaseAuth(): Promise<import("firebase/auth").Auth> {
+  if (!authInstance) {
+    const { getAuth } = await import("firebase/auth");
+    authInstance = getAuth(getFirebaseApp());
+  }
+  return authInstance;
+}
+
+export { getFirebaseApp as app };
+export default getFirebaseApp;
+

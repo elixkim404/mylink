@@ -191,3 +191,36 @@ export function addStoredLink(
   return newLink;
 }
 
+export function updateStoredLink(
+  linkId: string,
+  updatedFields: Partial<LinkItem>
+): void {
+  if (typeof window === "undefined") return;
+  try {
+    const data = getStoredMyLinkData();
+    const updatedLinks = data.links.map((link) =>
+      link.id === linkId
+        ? {
+            ...link,
+            ...updatedFields,
+            updatedAt: updatedFields.updatedAt || new Date().toISOString(),
+          }
+        : link
+    );
+    saveStoredMyLinkData({ ...data, links: updatedLinks });
+  } catch (err) {
+    console.error("Failed to update link in storage:", err);
+  }
+}
+
+export function deleteStoredLink(linkId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const data = getStoredMyLinkData();
+    const updatedLinks = data.links.filter((link) => link.id !== linkId);
+    saveStoredMyLinkData({ ...data, links: updatedLinks });
+  } catch (err) {
+    console.error("Failed to delete link from storage:", err);
+  }
+}
+

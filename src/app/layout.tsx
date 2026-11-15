@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "김예현 | 마이링크",
-  description: "코딩이 재미있는 컴퓨터공학과 1학년 새내기 김예현의 프로필이에요.",
+  title: "마이링크 | 나만의 퍼블릭 링크 & 프로필",
+  description: "구글 로그인으로 간편하게 시작하는 나만의 링크 인 바이오 서비스",
   icons: {
     icon: "/favicon.ico",
   },
@@ -17,8 +18,9 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-[#F2F4F6] text-[#191F28] selection:bg-[#3182F6] selection:text-white">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
 }
+

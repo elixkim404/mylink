@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useRef } from "react";
-import { Download, Copy } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import QRCode from "qrcode";
+import { Download, Copy, Loader2, QrCode as QrIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -26,145 +27,142 @@ export function QRCodeModal({
   handle,
   onCopySuccess,
 }: QRCodeModalProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
+  // 스마트폰으로 스캔 시 접속할 실제 퍼블릭 URL
   const profileUrl =
     typeof window !== "undefined"
-      ? window.location.href
+      ? `${window.location.origin}/@${handle}`
       : `https://mylink.app/@${handle}`;
+
+  // 모달이 열리거나 URL이 변경될 때 실제 스캔 가능한 QR 코드 생성
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isMounted = true;
+    queueMicrotask(() => {
+      setIsGenerating(true);
+    });
+
+    QRCode.toDataURL(profileUrl, {
+      width: 480,
+      margin: 2,
+      color: {
+        dark: "#191F28",
+        light: "#FFFFFF",
+      },
+      errorCorrectionLevel: "M",
+    })
+      .then((url) => {
+        if (isMounted) {
+          setQrDataUrl(url);
+          setIsGenerating(false);
+        }
+      })
+      .catch((err) => {
+        console.error("QR 코드 생성 오류:", err);
+        if (isMounted) {
+          setIsGenerating(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, profileUrl]);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(profileUrl);
-      onCopySuccess();
-    } catch {
-      // fallback
+      if (typeof window !== "undefined") {
+        await navigator.clipboard.writeText(profileUrl);
+        onCopySuccess();
+      }
+    } catch (err) {
+      console.warn("URL 복사 실패:", err);
     }
   };
 
   const handleDownloadQR = () => {
-    if (!svgRef.current) return;
+    if (!qrDataUrl) return;
+
     try {
-      const svgData = new XMLSerializer().serializeToString(svgRef.current);
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      const img = new Image();
-      canvas.width = 400;
-      canvas.height = 400;
-
-      const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-      const URL = window.URL || window.webkitURL || window;
-      const blobURL = URL.createObjectURL(svgBlob);
-
-      img.onload = () => {
-        if (ctx) {
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, 400, 400);
-          const pngUrl = canvas.toDataURL("image/png");
-          const downloadLink = document.createElement("a");
-          downloadLink.href = pngUrl;
-          downloadLink.download = `mylink-${handle}-qr.png`;
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
-        }
-        URL.revokeObjectURL(blobURL);
-      };
-      img.src = blobURL;
+      const downloadLink = document.createElement("a");
+      downloadLink.href = qrDataUrl;
+      downloadLink.download = `mylink-${handle || "profile"}-qr.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
     } catch (e) {
-      console.error("QR download error:", e);
+      console.error("QR 이미지 다운로드 오류:", e);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent onClose={onClose}>
+      <DialogContent onClose={onClose} className="text-center p-6 sm:p-7">
         <DialogHeader>
-          <DialogTitle>{displayName} 님의 프로필 QR</DialogTitle>
+          <div className="w-10 h-10 rounded-full bg-[#E8F3FF] text-[#3182F6] flex items-center justify-center mx-auto mb-2">
+            <QrIcon className="w-5 h-5" />
+          </div>
+          <DialogTitle>{displayName} 님의 실제 프로필 QR</DialogTitle>
           <DialogDescription>
-            스마트폰 카메라로 스캔해 보세요!
+            스마트폰 카메라로 비추면 내 프로필 링크로 바로 연결돼요!
           </DialogDescription>
         </DialogHeader>
 
-        {/* High Contrast QR Code Frame */}
-        <div className="p-4 bg-[#F9FAFB] rounded-2xl border border-[#E5E8EB] inline-block mb-4 shadow-2xs">
-          <svg
-            ref={svgRef}
-            className="w-44 h-44"
-            viewBox="0 0 120 120"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect width="120" height="120" fill="white" rx="14" />
+        {/* Real Scannable QR Code Frame (TDS Card) */}
+        <div className="my-5 flex flex-col items-center">
+          <div className="p-3 bg-white rounded-2xl border-2 border-[#E5E8EB] shadow-xs relative flex items-center justify-center min-w-[200px] min-h-[200px]">
+            {isGenerating || !qrDataUrl ? (
+              <div className="flex flex-col items-center justify-center gap-2 py-10 text-[#8B95A1]">
+                <Loader2 className="w-6 h-6 animate-spin text-[#3182F6]" />
+                <span className="text-[12px] font-medium">QR 코드 생성 중...</span>
+              </div>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={qrDataUrl}
+                alt={`${displayName} 님의 마이링크 QR 코드`}
+                className="w-48 h-48 rounded-xl object-contain"
+              />
+            )}
+          </div>
 
-            {/* Top-Left Finder */}
-            <rect x="14" y="14" width="28" height="28" rx="6" fill="#191F28" />
-            <rect x="18" y="18" width="20" height="20" rx="3" fill="white" />
-            <rect x="23" y="23" width="10" height="10" rx="2" fill="#3182F6" />
-
-            {/* Top-Right Finder */}
-            <rect x="78" y="14" width="28" height="28" rx="6" fill="#191F28" />
-            <rect x="82" y="18" width="20" height="20" rx="3" fill="white" />
-            <rect x="87" y="23" width="10" height="10" rx="2" fill="#3182F6" />
-
-            {/* Bottom-Left Finder */}
-            <rect x="14" y="78" width="28" height="28" rx="6" fill="#191F28" />
-            <rect x="18" y="82" width="20" height="20" rx="3" fill="white" />
-            <rect x="23" y="87" width="10" height="10" rx="2" fill="#3182F6" />
-
-            {/* Dynamic QR Data Blocks */}
-            <rect x="52" y="18" width="8" height="8" rx="2" fill="#191F28" />
-            <rect x="64" y="18" width="8" height="8" rx="2" fill="#191F28" />
-            <rect x="52" y="30" width="8" height="8" rx="2" fill="#3182F6" />
-            <rect x="64" y="30" width="8" height="8" rx="2" fill="#191F28" />
-            <rect x="52" y="42" width="20" height="8" rx="2" fill="#191F28" />
-
-            <rect x="18" y="52" width="8" height="18" rx="2" fill="#191F28" />
-            <rect x="30" y="52" width="8" height="10" rx="2" fill="#3182F6" />
-            <rect x="84" y="52" width="18" height="8" rx="2" fill="#191F28" />
-            <rect x="84" y="64" width="10" height="8" rx="2" fill="#3182F6" />
-            <rect x="96" y="64" width="8" height="8" rx="2" fill="#191F28" />
-
-            <rect x="52" y="64" width="8" height="8" rx="2" fill="#191F28" />
-            <rect x="64" y="64" width="8" height="18" rx="2" fill="#3182F6" />
-
-            <rect x="52" y="86" width="10" height="10" rx="2" fill="#191F28" />
-            <rect x="84" y="86" width="10" height="10" rx="2" fill="#191F28" />
-            <rect x="96" y="98" width="10" height="10" rx="2" fill="#3182F6" />
-            <rect x="74" y="98" width="8" height="10" rx="2" fill="#191F28" />
-          </svg>
+          {/* Profile URL Preview Card */}
+          <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F2F4F6] text-[#333D4B] text-[12px] font-medium max-w-[280px]">
+            <span className="text-[#3182F6] font-bold shrink-0">URL</span>
+            <span className="truncate">{profileUrl}</span>
+          </div>
         </div>
 
-        {/* Profile URL label */}
-        <p className="text-[13px] font-medium text-[#8B95A1] mb-6 tracking-wide">
-          mylink.app/@{handle}
-        </p>
-
-        {/* Actions using shadcn Button */}
-        <div className="flex flex-col gap-2.5">
+        {/* Action Buttons (TDS Style) */}
+        <div className="flex flex-col gap-2 w-full">
           <Button
             onClick={handleDownloadQR}
+            disabled={!qrDataUrl || isGenerating}
             variant="default"
-            className="w-full h-12 rounded-xl text-[15px]"
+            size="lg"
+            className="w-full h-11.5 rounded-xl text-[14px] font-bold cursor-pointer gap-2"
           >
             <Download className="w-4 h-4" />
-            <span>QR 이미지 저장</span>
+            <span>QR 이미지 저장 (PNG)</span>
           </Button>
 
           <Button
             onClick={handleCopy}
             variant="secondary"
-            className="w-full h-12 rounded-xl text-[15px]"
+            size="lg"
+            className="w-full h-11.5 rounded-xl text-[14px] font-semibold cursor-pointer gap-2 text-[#333D4B]"
           >
             <Copy className="w-4 h-4 text-[#6B7684]" />
-            <span>링크 주소 복사</span>
+            <span>프로필 주소 복사하기</span>
           </Button>
 
           <Button
             onClick={onClose}
             variant="ghost"
-            className="w-full h-10 rounded-xl text-[#8B95A1] hover:text-[#191F28] text-[14px]"
+            className="w-full h-9 rounded-xl text-[#8B95A1] hover:text-[#191F28] text-[13px] font-medium cursor-pointer"
           >
             닫기
           </Button>

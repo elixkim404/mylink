@@ -1,4 +1,6 @@
 export interface ProfileData {
+  uid?: string;
+  email?: string;
   handle: string;
   display_name: string;
   badge?: string;
@@ -11,6 +13,25 @@ export interface ProfileData {
   };
 }
 
+export interface UserProfileDoc {
+  uid: string;
+  email: string;
+  display_name: string;
+  handle: string;
+  badge?: string;
+  bio: string;
+  avatar_url: string;
+  socials?: {
+    github?: string;
+    email?: string;
+    instagram?: string;
+  };
+  createdAt?: unknown;
+  updatedAt?: unknown;
+  lastLoginAt?: unknown;
+}
+
+
 export interface LinkItem {
   id: string;
   title: string;
@@ -21,7 +42,8 @@ export interface LinkItem {
   is_active: boolean;
   sort_order: number;
   click_count?: number;
-  createdAt?: any;
+  createdAt?: unknown;
+  updatedAt?: unknown;
 }
 
 export interface CheerMessage {
