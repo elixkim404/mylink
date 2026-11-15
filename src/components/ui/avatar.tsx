@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "../../lib/utils";
+import { withBasePath } from "../../lib/urls";
 
 const Avatar = React.forwardRef<
   HTMLDivElement,
@@ -19,10 +20,11 @@ Avatar.displayName = "Avatar";
 const AvatarImage = React.forwardRef<
   HTMLImageElement,
   React.ImgHTMLAttributes<HTMLImageElement>
->(({ className, alt, ...props }, ref) => (
+>(({ className, alt, src, ...props }, ref) => (
   // eslint-disable-next-line @next/next/no-img-element
   <img
     ref={ref}
+    src={typeof src === "string" ? withBasePath(src) : src}
     alt={alt || "아바타"}
     className={cn("aspect-square h-full w-full object-cover", className)}
     {...props}

@@ -18,6 +18,7 @@ import type { User as FirebaseUser } from "firebase/auth";
 import type { UserProfileDoc } from "../types/mylink";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
+import { getUserProfileFullUrl, getUserProfilePath } from "../lib/urls";
 
 interface ProfileDropdownProps {
   user: FirebaseUser;
@@ -85,7 +86,7 @@ export function ProfileDropdown({
 
   const handleCopyProfileUrl = async () => {
     if (typeof window !== "undefined") {
-      const url = `${window.location.origin}/${encodeURIComponent(displayName)}`;
+      const url = getUserProfileFullUrl(user.uid);
       await navigator.clipboard.writeText(url);
       onShowToast("내 프로필 링크가 복사되었어요 🔗");
       setIsOpen(false);
@@ -192,9 +193,9 @@ export function ProfileDropdown({
 
           {/* 3. Action Menu Items */}
           <div className="flex flex-col gap-1 border-t border-[#F2F4F6] pt-2">
-            {/* 내 개인 페이지 바로가기 */}
+            {/* 내 개인 페이지 바로가기 (userId 기반) */}
             <Link
-              href={`/${encodeURIComponent(displayName)}`}
+              href={getUserProfilePath(user.uid)}
               onClick={() => setIsOpen(false)}
               className="flex items-center justify-between px-2.5 py-2 rounded-xl text-[13px] font-semibold text-[#191F28] hover:bg-[#E8F3FF] hover:text-[#3182F6] transition-colors group cursor-pointer"
             >
@@ -202,8 +203,8 @@ export function ProfileDropdown({
                 <ExternalLink className="w-4 h-4 text-[#3182F6] group-hover:scale-105 transition-transform" />
                 <span>내 개인 페이지</span>
               </div>
-              <span className="text-[11px] text-[#3182F6] font-medium group-hover:underline max-w-[90px] truncate">
-                /{displayName} &gt;
+              <span className="text-[11px] text-[#3182F6] font-medium group-hover:underline max-w-[120px] truncate font-mono">
+                /{user.uid.slice(0, 10)}... &gt;
               </span>
             </Link>
 

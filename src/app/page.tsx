@@ -25,6 +25,7 @@ import {
   useDeleteLinkMutation,
   useClickLinkMutation,
 } from "../lib/useLinks";
+import { getUserProfileFullUrl, getBaseAppUrl, withBasePath } from "../lib/urls";
 import { useAuth } from "../lib/authContext";
 import { Header } from "../components/Header";
 import { ProfileHero } from "../components/ProfileHero";
@@ -123,7 +124,8 @@ export default function PublicProfilePage() {
   }, [user]);
 
   const handleShare = async () => {
-    const shareUrl = typeof window !== "undefined" ? window.location.href : "https://mylink.app";
+    // user id 기반의 실제 서비스 공유 URL 생성 (더 이상 localhost 링크가 복사되지 않음)
+    const shareUrl = user?.uid ? getUserProfileFullUrl(user.uid) : getBaseAppUrl();
     try {
       if (typeof window !== "undefined" && navigator.share) {
         await navigator.share({
@@ -424,7 +426,7 @@ export default function PublicProfilePage() {
             <div className="rounded-xl overflow-hidden bg-[#F2F4F6] aspect-4/3 relative group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/workspace.jpg"
+                src={withBasePath("/images/workspace.jpg")}
                 alt="캠퍼스 코딩 공간"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
@@ -436,7 +438,7 @@ export default function PublicProfilePage() {
             <div className="rounded-xl overflow-hidden bg-[#F2F4F6] aspect-4/3 relative group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/coding.jpg"
+                src={withBasePath("/images/coding.jpg")}
                 alt="도서관 코딩 세션"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
@@ -494,12 +496,13 @@ export default function PublicProfilePage() {
         </footer>
       </main>
 
-      {/* 7. QR Code Popup Modal */}
+      {/* 7. QR Code Popup Modal (user id 기반 URL 전달) */}
       <QRCodeModal
         isOpen={showQrModal}
         onClose={() => setShowQrModal(false)}
-        displayName={data.profile.display_name}
-        handle={data.profile.handle}
+        displayName={currentProfile.display_name}
+        handle={currentProfile.handle}
+        url={user?.uid ? getUserProfileFullUrl(user.uid) : getBaseAppUrl()}
         onCopySuccess={() => showToast("프로필 주소가 복사되었어요 📋")}
       />
 

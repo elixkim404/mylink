@@ -11,6 +11,7 @@ import {
   DialogDescription,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
+import { getBaseAppUrl } from "../lib/urls";
 
 interface QRCodeModalProps {
   isOpen: boolean;
@@ -32,12 +33,8 @@ export function QRCodeModal({
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // 스마트폰으로 스캔 시 접속할 실제 퍼블릭 URL
-  const profileUrl =
-    url ||
-    (typeof window !== "undefined"
-      ? `${window.location.origin}/${encodeURIComponent(displayName || handle)}`
-      : `https://mylink.app/${encodeURIComponent(displayName || handle)}`);
+  // 스마트폰으로 스캔 시 접속할 실제 퍼블릭 URL (더 이상 localhost가 아닌 실제 서비스 도메인)
+  const profileUrl = url || getBaseAppUrl();
 
   // 모달이 열리거나 URL이 변경될 때 실제 스캔 가능한 QR 코드 생성
   useEffect(() => {
