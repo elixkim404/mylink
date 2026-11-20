@@ -5,6 +5,7 @@ const basePath = isProd ? "/mylink" : "";
 
 const nextConfig: NextConfig = {
   ...(isProd ? { output: "export" } : {}),
+  distDir: isProd ? ".next-build" : ".next",
   basePath,
   trailingSlash: true,
   images: {

@@ -56,17 +56,17 @@ try {
   fs.cpSync(outDir, worktreeDir, { recursive: true });
   fs.writeFileSync(path.join(worktreeDir, ".nojekyll"), "");
 
-  // 5. 변경사항 확인 후 커밋 & 푸시
-  const status = execSync("git status --porcelain", {
+  // 5. 변경사항 스테이징 후, 실제 staged 변경이 있을 때만 커밋 & 푸시
+  run("git add -A", worktreeDir);
+  const staged = execSync("git diff --cached --name-only", {
     cwd: worktreeDir,
     encoding: "utf8",
   }).trim();
 
-  if (!status) {
+  if (!staged) {
     console.log("\n✅ 배포할 변경사항이 없습니다. 이미 최신 상태입니다.");
   } else {
     const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19);
-    run("git add -A", worktreeDir);
     run(`git commit -m "deploy: 최신 빌드 자동 배포 (${timestamp})"`, worktreeDir);
     run("git push origin gh-pages", worktreeDir);
     console.log("\n🎉 GitHub Pages 배포 완료!");
