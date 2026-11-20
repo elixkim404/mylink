@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Lock, Sparkles, FolderLock, UserCheck, BarChart3, Loader2, ArrowRight } from "lucide-react";
-import { useAuth } from "../lib/authContext";
+import { useAuth, getGoogleAuthErrorMessage } from "../lib/authContext";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -23,8 +23,8 @@ export function LoginNoticeCard({ onShowToast }: LoginNoticeCardProps) {
       if (profile) {
         onShowToast(`${profile.display_name} 님 환영해요! 나만의 마이페이지가 준비되었어요 🎉`);
       }
-    } catch {
-      onShowToast("Google 로그인 중 문제가 발생했어요. 다시 시도해주세요 ⚠️");
+    } catch (error) {
+      onShowToast(getGoogleAuthErrorMessage(error));
     } finally {
       setIsLoggingIn(false);
     }

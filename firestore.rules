@@ -32,11 +32,16 @@ service cloud.firestore {
         && request.resource.data.url.matches('^https?://.+');
     }
 
-    // 방문자 링크 클릭 시 click_count 필드만 +1 증가하는지 확인
+    // 방문자(비로그인 포함 누구나) 링크 클릭 시 click_count 필드만 +1 증가하는지 확인
     function isOnlyClickCountIncrement() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['click_count'])
         && request.resource.data.click_count is int
-        && request.resource.data.click_count == resource.data.get('click_count', 0) + 1;
+        && (
+          (resource.data.get('click_count', 0) is int
+            && request.resource.data.click_count == resource.data.get('click_count', 0) + 1)
+          || (!(resource.data.get('click_count', 0) is int)
+            && request.resource.data.click_count == 1)
+        );
     }
 
     // 1. 유저 루트 문서 (현재 앱의 프로필 조회·검색·편집 경로: users/{userId})

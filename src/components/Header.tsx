@@ -10,7 +10,7 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
-import { useAuth } from "../lib/authContext";
+import { useAuth, getGoogleAuthErrorMessage } from "../lib/authContext";
 import { Button } from "./ui/button";
 import { GoogleIcon } from "./icons/GoogleIcon";
 import { ProfileDropdown } from "./ProfileDropdown";
@@ -47,8 +47,8 @@ export function Header({
       if (profile) {
         onShowToast(`${profile.display_name} 님, 환영해요! 🎉`);
       }
-    } catch {
-      onShowToast("구글 로그인 중 문제가 발생했어요. 다시 시도해주세요 ⚠️");
+    } catch (error) {
+      onShowToast(getGoogleAuthErrorMessage(error));
     } finally {
       setIsLoggingIn(false);
     }

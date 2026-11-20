@@ -16,20 +16,34 @@ import {
   Lock,
   Loader2,
   ShieldCheck,
+  MousePointerClick,
+  Plus,
+  Layers,
 } from "lucide-react";
-import { MyLinkData, ProfileData, UserProfileDoc } from "../../types/mylink";
+import { MyLinkData, ProfileData, UserProfileDoc, LinkItem } from "../../types/mylink";
 import {
   getStoredMyLinkData,
   saveStoredMyLinkData,
   DEFAULT_MYLINK_DATA,
 } from "../../lib/storage";
-import { useAuth } from "../../lib/authContext";
+import { getTimestampNumber } from "../../lib/firebaseLinks";
+import {
+  useLinksQuery,
+  useAddLinkMutation,
+  useUpdateLinkMutation,
+  useDeleteLinkMutation,
+  useClickLinkMutation,
+} from "../../lib/useLinks";
+import { useAuth, getGoogleAuthErrorMessage } from "../../lib/authContext";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "../../components/ui/avatar";
 import { GoogleIcon } from "../../components/icons/GoogleIcon";
+import { LinkCard } from "../../components/LinkCard";
+import { AddLinkDialog } from "../../components/AddLinkDialog";
+import { DeleteLinkDialog } from "../../components/DeleteLinkDialog";
 
 function InstagramIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -59,6 +73,18 @@ export default function MyPageEditProfile() {
 
   const { user, userProfile, loading: authLoading, signInWithGoogle, updateProfileData } = useAuth();
 
+  // 내 링크 목록 및 조회수(클릭수) 동기화
+  const { data: remoteLinks, isLoading: isLinksLoading } = useLinksQuery(user?.uid);
+  const addLinkMutation = useAddLinkMutation(user?.uid);
+  const updateLinkMutation = useUpdateLinkMutation(user?.uid);
+  const deleteLinkMutation = useDeleteLinkMutation(user?.uid);
+  const clickLinkMutation = useClickLinkMutation(user?.uid);
+
+  const [localLinks, setLocalLinks] = useState<LinkItem[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingLink, setDeletingLink] = useState<LinkItem | null>(null);
+
   // Form states
   const [displayName, setDisplayName] = useState("");
   const [handle, setHandle] = useState("");
@@ -73,7 +99,7 @@ export default function MyPageEditProfile() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Firestore userProfile 또는 로컬스토리지에서 프로필 로드
+  // Firestore userProfile 또는 로컬스토리지에서 프로필 및 링크 로드
   useEffect(() => {
     queueMicrotask(() => {
       if (user && userProfile) {
@@ -107,6 +133,7 @@ export default function MyPageEditProfile() {
         const rawEmail = p.socials?.email || "";
         setEmail(rawEmail.startsWith("mailto:") ? rawEmail.replace("mailto:", "") : rawEmail);
         setInstagram(p.socials?.instagram || "");
+        setLocalLinks(data.links || []);
       }
     });
   }, [user, userProfile]);
@@ -118,6 +145,96 @@ export default function MyPageEditProfile() {
     }, 2500);
   };
 
+  // 현재 표시할 링크 목록 (로그인 시 Firestore, 비로그인 시 localStorage)
+  const myLinks = user ? (remoteLinks ?? []) : localLinks;
+  const sortedLinks = [...myLinks]
+    .filter((l) => l.is_active)
+    .sort((a, b) => {
+      const timeA = getTimestampNumber(a.createdAt);
+      const timeB = getTimestampNumber(b.createdAt);
+      if (timeA !== timeB) return timeB - timeA;
+      return (a.sort_order ?? 1) - (b.sort_order ?? 1);
+    });
+  const totalClicks = myLinks.reduce((acc, curr) => acc + (Number(curr.click_count) || 0), 0);
+
+  // 링크 클릭 시 조회수(클릭수) 증가
+  const handleLinkClick = (clickedLink: LinkItem) => {
+    if (user) {
+      clickLinkMutation.mutate(clickedLink.id);
+    } else {
+      const stored = getStoredMyLinkData();
+      const updatedLinks = stored.links.map((link) =>
+        link.id === clickedLink.id
+          ? { ...link, click_count: (Number(link.click_count) || 0) + 1 }
+          : link
+      );
+      saveStoredMyLinkData({ ...stored, links: updatedLinks });
+      setLocalLinks(updatedLinks);
+    }
+  };
+
+  const handleRequestAddLink = () => {
+    if (!user) {
+      showToast("로그인 후 나만의 링크를 추가할 수 있어요 🔒");
+      return;
+    }
+    setShowAddModal(true);
+  };
+
+  const handleAddLink = async (newLinkData: Omit<LinkItem, "id" | "click_count">) => {
+    if (!user) {
+      showToast("로그인이 필요합니다 🔒");
+      return;
+    }
+    try {
+      await addLinkMutation.mutateAsync(newLinkData);
+      showToast("새 링크가 저장되었어요 ✨");
+    } catch (error) {
+      console.error("링크 저장 실패:", error);
+      showToast("링크 저장 중 오류가 발생했어요 ⚠️");
+    }
+  };
+
+  const handleUpdateLink = async (
+    linkId: string,
+    updatedFields: Partial<Omit<LinkItem, "id">>
+  ) => {
+    if (!user) {
+      showToast("로그인 후 링크를 수정할 수 있어요 🔒");
+      return;
+    }
+    try {
+      await updateLinkMutation.mutateAsync({ linkId, updatedFields });
+      showToast("링크가 수정되었어요 ✨");
+    } catch (error) {
+      console.error("링크 수정 실패:", error);
+      showToast("링크 수정 중 오류가 발생했어요 ⚠️");
+    }
+  };
+
+  const handleDeleteLink = async (linkId: string) => {
+    if (!user) {
+      showToast("로그인 후 링크를 삭제할 수 있어요 🔒");
+      return;
+    }
+    try {
+      await deleteLinkMutation.mutateAsync(linkId);
+      showToast("링크가 삭제되었어요 🗑️");
+    } catch (error) {
+      console.error("링크 삭제 실패:", error);
+      showToast("링크 삭제 중 오류가 발생했어요 ⚠️");
+    }
+  };
+
+  const handleRequestDelete = (link: LinkItem) => {
+    if (!user) {
+      showToast("로그인 후 링크를 관리할 수 있어요 🔒");
+      return;
+    }
+    setDeletingLink(link);
+    setShowDeleteModal(true);
+  };
+
   const handleGoogleLogin = async () => {
     try {
       setIsLoggingIn(true);
@@ -125,8 +242,8 @@ export default function MyPageEditProfile() {
       if (profile) {
         showToast(`${profile.display_name} 님, 마이페이지에 오신 것을 환영해요! 🎉`);
       }
-    } catch {
-      showToast("구글 로그인 중 오류가 발생했어요 ⚠️");
+    } catch (error) {
+      showToast(getGoogleAuthErrorMessage(error));
     } finally {
       setIsLoggingIn(false);
     }
@@ -338,6 +455,80 @@ export default function MyPageEditProfile() {
             </span>
           </div>
         )}
+
+        {/* 0. 내 링크 목록 & 조회수 현황 */}
+        <Card className="p-5 flex flex-col gap-3.5 text-left">
+          <div className="flex items-center justify-between gap-2 pb-2 border-b border-[#E5E8EB]/60">
+            <div className="flex items-center gap-1.5">
+              <MousePointerClick className="w-4 h-4 text-[#3182F6]" />
+              <h2 className="text-[15px] font-bold text-[#191F28]">내 링크 &amp; 조회수</h2>
+            </div>
+            <Button
+              type="button"
+              onClick={handleRequestAddLink}
+              variant="brandWeak"
+              size="sm"
+              className="h-7.5 px-2.5 rounded-full text-[12px] font-bold gap-1 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>새 링크 추가</span>
+            </Button>
+          </div>
+
+          {/* 조회수 요약 스냅샷 (0회여도 항상 표시) */}
+          <div className="grid grid-cols-2 gap-2.5 bg-[#F9FAFB] p-2.5 rounded-xl border border-[#E5E8EB]/70">
+            <div className="flex flex-col items-center justify-center p-2 bg-white rounded-lg shadow-2xs text-center">
+              <div className="flex items-center gap-1 text-[#8B95A1] text-[11px] font-medium mb-0.5">
+                <Layers className="w-3 h-3 text-[#3182F6]" />
+                <span>등록 링크</span>
+              </div>
+              <span className="text-[16px] font-bold text-[#191F28] tabular-nums">
+                {sortedLinks.length}개
+              </span>
+            </div>
+            <div className="flex flex-col items-center justify-center p-2 bg-white rounded-lg shadow-2xs text-center">
+              <div className="flex items-center gap-1 text-[#8B95A1] text-[11px] font-medium mb-0.5">
+                <MousePointerClick className="w-3 h-3 text-[#2B9D5B]" />
+                <span>누적 조회수</span>
+              </div>
+              <span className="text-[16px] font-bold text-[#191F28] tabular-nums">
+                {totalClicks.toLocaleString()}회
+              </span>
+            </div>
+          </div>
+
+          {/* 개별 링크 및 조회수 목록 */}
+          {user && isLinksLoading ? (
+            <div className="py-6 flex flex-col items-center justify-center gap-2 text-[#8B95A1]">
+              <Loader2 className="w-5 h-5 animate-spin text-[#3182F6]" />
+              <p className="text-[12px] font-medium text-[#4E5968]">
+                링크와 조회수를 불러오는 중이에요...
+              </p>
+            </div>
+          ) : sortedLinks.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {sortedLinks.map((link) => (
+                <LinkCard
+                  key={link.id}
+                  link={link}
+                  readOnly={!user}
+                  onLinkClick={handleLinkClick}
+                  onUpdateLink={user ? handleUpdateLink : undefined}
+                  onRequestDelete={user ? handleRequestDelete : undefined}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-6 px-3 text-center rounded-xl border border-dashed border-[#E5E8EB] bg-[#F9FAFB]/60">
+              <p className="text-[13px] font-medium text-[#4E5968] mb-1">
+                등록된 링크가 아직 없어요
+              </p>
+              <p className="text-[11px] text-[#8B95A1]">
+                링크를 추가하면 각 링크의 조회수(0회 포함)를 여기서 확인할 수 있어요.
+              </p>
+            </div>
+          )}
+        </Card>
 
         {/* 1. Profile Avatar Section */}
         <Card className="p-6 flex flex-col items-center text-center">
@@ -572,6 +763,22 @@ export default function MyPageEditProfile() {
           </Button>
         </div>
       </div>
+
+      {/* 링크 추가/삭제 다이얼로그 */}
+      <AddLinkDialog
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAddLink={handleAddLink}
+      />
+      <DeleteLinkDialog
+        isOpen={showDeleteModal}
+        link={deletingLink}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setDeletingLink(null);
+        }}
+        onConfirmDelete={handleDeleteLink}
+      />
     </div>
   );
 }

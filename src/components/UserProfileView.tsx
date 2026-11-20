@@ -4,20 +4,17 @@ import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Check,
-  Plus,
   Loader2,
   Sparkles,
   ArrowRight,
   UserX,
+  MousePointerClick,
 } from "lucide-react";
 import { LinkItem, CheerMessage, ProfileData, UserProfileDoc } from "../types/mylink";
 import { getStoredMyLinkData } from "../lib/storage";
 import { getTimestampNumber } from "../lib/firebaseLinks";
 import {
   useLinksQuery,
-  useAddLinkMutation,
-  useUpdateLinkMutation,
-  useDeleteLinkMutation,
   useClickLinkMutation,
 } from "../lib/useLinks";
 import { useProfileQuery, useProfileByDisplayNameQuery } from "../lib/useProfile";
@@ -26,8 +23,6 @@ import { Header } from "./Header";
 import { ProfileHero } from "./ProfileHero";
 import { LinkCard } from "./LinkCard";
 import { QRCodeModal } from "./QRCodeModal";
-import { AddLinkDialog } from "./AddLinkDialog";
-import { DeleteLinkDialog } from "./DeleteLinkDialog";
 import { CheerSection } from "./CheerSection";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -138,15 +133,9 @@ export function UserProfileView({ userId }: UserProfileViewProps) {
     searchedUser ? targetUserId : undefined
   );
 
-  const addLinkMutation = useAddLinkMutation(targetUserId);
-  const updateLinkMutation = useUpdateLinkMutation(targetUserId);
-  const deleteLinkMutation = useDeleteLinkMutation(targetUserId);
   const clickLinkMutation = useClickLinkMutation(targetUserId);
 
   const [showQrModal, setShowQrModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletingLink, setDeletingLink] = useState<LinkItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // 응원 인터랙션 로컬 상태
@@ -220,45 +209,6 @@ export function UserProfileView({ userId }: UserProfileViewProps) {
   // 링크 클릭 시 카운트 증가
   const handleLinkClick = (clickedLink: LinkItem) => {
     clickLinkMutation.mutate(clickedLink.id);
-  };
-
-  // 링크 추가 (본인 전용)
-  const handleAddLink = async (newLinkData: Omit<LinkItem, "id" | "click_count">) => {
-    if (!isOwner) return;
-    try {
-      await addLinkMutation.mutateAsync(newLinkData);
-      showToast("새 링크가 성공적으로 추가되었어요 ✨");
-    } catch (error) {
-      console.error("링크 추가 실패:", error);
-      showToast("링크 추가 중 오류가 발생했어요 ⚠️");
-    }
-  };
-
-  // 링크 수정 (본인 전용)
-  const handleUpdateLink = async (
-    linkId: string,
-    updatedFields: Partial<Omit<LinkItem, "id">>
-  ) => {
-    if (!isOwner) return;
-    try {
-      await updateLinkMutation.mutateAsync({ linkId, updatedFields });
-      showToast("링크가 성공적으로 수정되었어요 ✨");
-    } catch (error) {
-      console.error("링크 수정 실패:", error);
-      showToast("링크 수정 중 오류가 발생했어요 ⚠️");
-    }
-  };
-
-  // 링크 삭제 (본인 전용)
-  const handleDeleteLink = async (linkId: string) => {
-    if (!isOwner) return;
-    try {
-      await deleteLinkMutation.mutateAsync(linkId);
-      showToast("링크가 삭제되었어요 🗑️");
-    } catch (error) {
-      console.error("링크 삭제 실패:", error);
-      showToast("링크 삭제 중 오류가 발생했어요 ⚠️");
-    }
   };
 
   // 활성 링크 목록 및 정렬
@@ -375,30 +325,38 @@ export function UserProfileView({ userId }: UserProfileViewProps) {
         {/* 3. Active Links Container */}
         <section className="flex flex-col gap-2.5">
           <div className="flex items-center justify-between px-1 pt-2 pb-1">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <h2 className="text-[17px] font-bold text-[#191F28] tracking-tight">
                 링크 목록
               </h2>
               <Badge variant="brand" className="text-[11px] px-2 py-0.5 tabular-nums">
                 {activeLinks.length}개
               </Badge>
+              <span
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#4E5968] bg-[#F2F4F6] px-2 py-0.5 rounded-full tabular-nums"
+                title={`전체 누적 조회수 ${totalClicks.toLocaleString()}회`}
+              >
+                <MousePointerClick className="w-3 h-3 text-[#3182F6]" />
+                <span>조회 {totalClicks.toLocaleString()}회</span>
+              </span>
             </div>
 
-            {/* 본인일 때만 [+ 새 링크 추가] 버튼 노출 */}
+            {/* 본인일 때 마이페이지 링크 관리 바로가기 버튼만 노출 */}
             {isOwner && (
-              <Button
-                onClick={() => setShowAddModal(true)}
-                variant="brandWeak"
-                size="sm"
-                className="h-8 px-2.5 rounded-full text-[12px] font-bold gap-1 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>새 링크 추가</span>
-              </Button>
+              <Link href="/edit">
+                <Button
+                  variant="brandWeak"
+                  size="sm"
+                  className="h-8 px-2.5 rounded-full text-[12px] font-bold gap-1 cursor-pointer"
+                >
+                  <span>링크 관리</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Button>
+              </Link>
             )}
           </div>
 
-          {/* 링크 목록 */}
+          {/* 링크 목록 (공개 프로필은 항상 방문자용 읽기 전용 뷰) */}
           {isLinksLoading ? (
             <Card className="p-8 text-center text-[#8B95A1] flex flex-col items-center gap-2">
               <Loader2 className="w-5 h-5 animate-spin text-[#3182F6]" />
@@ -412,17 +370,8 @@ export function UserProfileView({ userId }: UserProfileViewProps) {
                 <LinkCard
                   key={link.id}
                   link={link}
-                  readOnly={!isOwner}
+                  readOnly
                   onLinkClick={handleLinkClick}
-                  onUpdateLink={isOwner ? handleUpdateLink : undefined}
-                  onRequestDelete={
-                    isOwner
-                      ? (targetLink) => {
-                          setDeletingLink(targetLink);
-                          setShowDeleteModal(true);
-                        }
-                      : undefined
-                  }
                 />
               ))}
             </div>
@@ -494,26 +443,6 @@ export function UserProfileView({ userId }: UserProfileViewProps) {
         url={fullShareUrl}
         onCopySuccess={() => showToast("프로필 주소가 복사되었어요 📋")}
       />
-
-      {/* 7. 링크 추가/삭제 다이얼로그 (본인 전용) */}
-      {isOwner && (
-        <>
-          <AddLinkDialog
-            isOpen={showAddModal}
-            onClose={() => setShowAddModal(false)}
-            onAddLink={handleAddLink}
-          />
-          <DeleteLinkDialog
-            isOpen={showDeleteModal}
-            link={deletingLink}
-            onClose={() => {
-              setShowDeleteModal(false);
-              setDeletingLink(null);
-            }}
-            onConfirmDelete={handleDeleteLink}
-          />
-        </>
-      )}
     </div>
   );
 }

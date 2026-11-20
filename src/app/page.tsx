@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Plus,
   Lock,
+  MousePointerClick,
 } from "lucide-react";
 import { MyLinkData, LinkItem, CheerMessage, ProfileData } from "../types/mylink";
 import {
@@ -106,6 +107,7 @@ export default function PublicProfilePage() {
         setData((prev) => ({
           ...prev,
           profile: latest.profile,
+          links: latest.links,
         }));
       }
     };
@@ -332,25 +334,34 @@ export default function PublicProfilePage() {
         {/* 3. Active Links Container */}
         <section className="flex flex-col gap-2.5">
           <div className="flex items-center justify-between px-1 pt-2 pb-1">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <h2 className="text-[17px] font-bold text-[#191F28] tracking-tight">
                 {user ? "내 링크 목록" : "둘러보기 링크"}
               </h2>
               <Badge variant="brand" className="text-[11px] px-2 py-0.5 tabular-nums">
                 {activeLinks.length}개
               </Badge>
+              <span
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#4E5968] bg-[#F2F4F6] px-2 py-0.5 rounded-full tabular-nums"
+                title={`전체 누적 조회수 ${totalClicks.toLocaleString()}회`}
+              >
+                <MousePointerClick className="w-3 h-3 text-[#3182F6]" />
+                <span>조회 {totalClicks.toLocaleString()}회</span>
+              </span>
             </div>
 
-            {/* [+ 새 링크 추가] Button */}
-            <Button
-              onClick={handleRequestAddLink}
-              variant="brandWeak"
-              size="sm"
-              className="h-8 px-2.5 rounded-full text-[12px] font-bold gap-1 cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>새 링크 추가</span>
-            </Button>
+            {/* 로그인 상태일 때만 [+ 새 링크 추가] 버튼 노출 */}
+            {user && (
+              <Button
+                onClick={handleRequestAddLink}
+                variant="brandWeak"
+                size="sm"
+                className="h-8 px-2.5 rounded-full text-[12px] font-bold gap-1 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>새 링크 추가</span>
+              </Button>
+            )}
           </div>
 
           {/* Links List State */}
@@ -367,9 +378,10 @@ export default function PublicProfilePage() {
                 <LinkCard
                   key={link.id}
                   link={link}
+                  readOnly={!user}
                   onLinkClick={handleLinkClick}
-                  onUpdateLink={handleUpdateLink}
-                  onRequestDelete={handleRequestDelete}
+                  onUpdateLink={user ? handleUpdateLink : undefined}
+                  onRequestDelete={user ? handleRequestDelete : undefined}
                 />
               ))}
             </div>

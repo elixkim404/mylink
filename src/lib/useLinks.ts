@@ -26,6 +26,8 @@ export function useLinksQuery(userId?: string) {
       return getFirebaseLinks(userId);
     },
     enabled: !!userId,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -187,6 +189,16 @@ export function useClickLinkMutation(userId?: string) {
       );
 
       return { previousLinks };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousLinks) {
+        queryClient.setQueryData(queryKey, context.previousLinks);
+      }
+    },
+    onSettled: () => {
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey });
+      }
     },
   });
 }

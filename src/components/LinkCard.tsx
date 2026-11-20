@@ -16,6 +16,7 @@ import {
   Smile,
   Tag,
   ExternalLink,
+  MousePointerClick,
 } from "lucide-react";
 import { LinkItem } from "../types/mylink";
 import { incrementLinkClick } from "../lib/storage";
@@ -122,9 +123,10 @@ export function LinkCard({
 
   // 링크 클릭 네비게이션
   const handleLinkClick = () => {
-    incrementLinkClick(link.id);
     if (onLinkClick) {
       onLinkClick(link);
+    } else {
+      incrementLinkClick(link.id);
     }
   };
 
@@ -510,9 +512,16 @@ export function LinkCard({
               </p>
             )}
             <div className="mt-1 flex items-center gap-2 flex-wrap text-[11px] text-[#8B95A1]">
-              <span className="truncate flex items-center gap-1 max-w-[200px] xs:max-w-[240px]">
+              <span className="truncate flex items-center gap-1 max-w-[180px] xs:max-w-[220px]">
                 <ExternalLink className="w-3 h-3 shrink-0 opacity-70" />
                 <span className="truncate">{link.url}</span>
+              </span>
+              <span
+                className="inline-flex items-center gap-1 text-[10px] text-[#4E5968] bg-[#F2F4F6] px-1.5 py-0.5 rounded-md shrink-0 font-semibold tabular-nums"
+                title={`누적 조회수 ${(Number(link.click_count) || 0).toLocaleString()}회`}
+              >
+                <MousePointerClick className="w-2.5 h-2.5 text-[#3182F6] stroke-[2.2]" />
+                <span>조회 {(Number(link.click_count) || 0).toLocaleString()}회</span>
               </span>
               {relativeUpdated && (
                 <span

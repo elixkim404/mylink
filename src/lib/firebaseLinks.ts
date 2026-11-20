@@ -162,7 +162,7 @@ export async function getFirebaseLinks(userId: string): Promise<LinkItem[]> {
           badge: data.badge || undefined,
           is_active: data.is_active ?? true,
           sort_order: data.sort_order ?? 1,
-          click_count: data.click_count || 0,
+          click_count: Number(data.click_count) || 0,
           createdAt: data.createdAt,
           updatedAt: data.updatedAt,
         };
@@ -181,7 +181,7 @@ export async function getFirebaseLinks(userId: string): Promise<LinkItem[]> {
           badge: data.badge || undefined,
           is_active: data.is_active ?? true,
           sort_order: data.sort_order ?? 1,
-          click_count: data.click_count || 0,
+          click_count: Number(data.click_count) || 0,
           createdAt: data.createdAt,
           updatedAt: data.updatedAt,
         };
@@ -205,6 +205,7 @@ export async function getFirebaseLinks(userId: string): Promise<LinkItem[]> {
  * Firebase Firestore (users/{userId}/links/{linkId})의 클릭 카운트를 1 증가시킵니다.
  */
 export async function incrementFirebaseLinkClick(userId: string, linkId: string): Promise<void> {
+  if (!linkId) return;
   try {
     const cleanUserId = userId && userId.trim() ? userId.trim() : "anonymous";
     const { firestore, db } = await getFirestoreContext();
@@ -215,6 +216,7 @@ export async function incrementFirebaseLinkClick(userId: string, linkId: string)
     });
   } catch (error) {
     console.warn("Firestore 클릭 카운트 업데이트 실패:", error);
+    throw error;
   }
 }
 
