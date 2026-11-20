@@ -73,32 +73,24 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-30 w-full max-w-[430px] bg-[#F9FAFB]/95 backdrop-blur-md px-4 h-14 flex items-center justify-between border-b border-[#E5E8EB]/70">
-      {/* 1. Left Brand / Personal Page Link */}
-      {user ? (
-        <Link
-          href={personalPagePath}
-          className="flex items-center gap-1.5 text-left group cursor-pointer outline-hidden shrink-0"
-          title="내 개인별 페이지로 이동"
-        >
-          <span className="font-bold text-[16px] text-[#191F28] group-hover:text-[#3182F6] transition-colors max-w-[130px] truncate">
-            @{currentHandle}
-          </span>
+      {/* 1. Left Brand Title → 루트 페이지(/)로 이동 */}
+      <Link
+        href="/"
+        onClick={handleScrollToTop}
+        className="flex items-center gap-1.5 text-left group cursor-pointer outline-hidden shrink-0"
+        title="메인 페이지로 이동"
+      >
+        <span className="font-bold text-[16px] text-[#191F28] group-hover:text-[#3182F6] transition-colors max-w-[130px] truncate">
+          {user ? `@${currentHandle}` : "@mylink"}
+        </span>
+        {user ? (
           <ShieldCheck className="w-4 h-4 text-[#3182F6] shrink-0" />
-        </Link>
-      ) : (
-        <button
-          onClick={handleScrollToTop}
-          className="flex items-center gap-1.5 text-left group cursor-pointer outline-hidden shrink-0"
-          title="최상단으로 이동"
-        >
-          <span className="font-bold text-[16px] text-[#191F28] group-hover:text-[#3182F6] transition-colors max-w-[130px] truncate">
-            @mylink
-          </span>
+        ) : (
           <span className="text-[10px] font-semibold text-[#8B95A1] bg-[#F2F4F6] px-1.5 py-0.5 rounded-md">
             방문자
           </span>
-        </button>
-      )}
+        )}
+      </Link>
 
       {/* 2. Right Action Controls */}
       <div className="flex items-center gap-1.5">
