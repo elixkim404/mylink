@@ -15,18 +15,26 @@ function run(command, cwd = projectRoot) {
 }
 
 function cleanWorktree() {
+  if (!fs.existsSync(worktreeDir)) return;
+  try {
+    execSync(`git worktree remove --force "${worktreeDir}"`, {
+      cwd: projectRoot,
+      stdio: "ignore",
+    });
+  } catch {
+    // worktree 등록이 없는 경우 무시
+  }
   if (fs.existsSync(worktreeDir)) {
     try {
-      execSync(`git worktree remove --force "${worktreeDir}"`, {
-        cwd: projectRoot,
-        stdio: "ignore",
-      });
+      fs.rmSync(worktreeDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 300 });
     } catch {
-      // worktree 등록이 없는 경우 무시
+      console.warn(`\n⚠️ 임시 폴더를 삭제하지 못했습니다(배포에는 영향 없음): ${worktreeDir}`);
     }
-    if (fs.existsSync(worktreeDir)) {
-      fs.rmSync(worktreeDir, { recursive: true, force: true });
-    }
+  }
+  try {
+    execSync("git worktree prune", { cwd: projectRoot, stdio: "ignore" });
+  } catch {
+    // 무시
   }
 }
 
