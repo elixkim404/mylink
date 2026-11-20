@@ -170,7 +170,12 @@ export function ProfileDropdown({
               </span>
             </div>
 
-            <div className="flex flex-col items-center justify-center p-1.5 bg-white rounded-lg shadow-2xs text-center">
+            <Link
+              href="/stats"
+              onClick={() => setIsOpen(false)}
+              className="flex flex-col items-center justify-center p-1.5 bg-white rounded-lg shadow-2xs text-center hover:bg-[#E8F3FF]/50 transition-colors cursor-pointer"
+              title="클릭 통계 보기"
+            >
               <div className="flex items-center gap-1 text-[#8B95A1] text-[11px] font-medium mb-0.5">
                 <MousePointerClick className="w-3 h-3 text-[#2B9D5B]" />
                 <span>누적 클릭</span>
@@ -178,7 +183,7 @@ export function ProfileDropdown({
               <span className="text-[15px] font-bold text-[#191F28] tabular-nums">
                 {totalClicks}회
               </span>
-            </div>
+            </Link>
           </div>
 
           {/* Firestore Path Hint */}

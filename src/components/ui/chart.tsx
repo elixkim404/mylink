@@ -52,13 +52,18 @@ function ChartContainer({
         data-slot="chart"
         data-chart={chartId}
         className={cn(
-          "[&_.recharts-cartesian-axis-tick_text]:fill-[#8B95A1] [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[#E5E8EB]/60 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-[#E5E8EB] [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-[#E5E8EB] [&_.recharts-radial-bar-background-sector]:fill-[#F2F4F6] [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-[#F2F4F6]/70 [&_.recharts-reference-line_[stroke='#ccc']]:stroke-[#E5E8EB] flex w-full min-w-0 aspect-video justify-center text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
+          "[&_.recharts-cartesian-axis-tick_text]:fill-[#8B95A1] [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[#E5E8EB]/60 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-[#E5E8EB] [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-[#E5E8EB] [&_.recharts-radial-bar-background-sector]:fill-[#F2F4F6] [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-[#F2F4F6]/70 [&_.recharts-reference-line_[stroke='#ccc']]:stroke-[#E5E8EB] block w-full min-w-0 aspect-video text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
           className
         )}
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer width="100%" height="100%" minWidth={0}>
+        <RechartsPrimitive.ResponsiveContainer
+          width="100%"
+          height="100%"
+          minWidth={0}
+          initialDimension={{ width: 340, height: 200 }}
+        >
           {children}
         </RechartsPrimitive.ResponsiveContainer>
       </div>

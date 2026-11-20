@@ -194,7 +194,7 @@ export default function StatsPage() {
 
         {/* 중단: shadcn/ui BarChart (링크별 클릭수 시각화) */}
         {!isStatsLoading && chartData.length > 0 && (
-          <Card className="p-5 flex flex-col gap-3 text-left">
+          <Card className="p-5 flex flex-col gap-3 text-left overflow-visible">
             <div className="flex items-center justify-between pb-2 border-b border-[#E5E8EB]/60">
               <div className="flex items-center gap-1.5">
                 <BarChart3 className="w-4 h-4 text-[#3182F6]" />
@@ -257,6 +257,8 @@ export default function StatsPage() {
                     fill="var(--color-clickCount, #3182F6)"
                     radius={[0, 8, 8, 0]}
                     barSize={20}
+                    minPointSize={4}
+                    isAnimationActive={false}
                   />
                 </BarChart>
               </ChartContainer>
