@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LinkItem } from "../types/mylink";
 import {
   getFirebaseLinks,
+  getFirebaseLinksByClicks,
   addFirebaseLink,
   updateFirebaseLink,
   deleteFirebaseLink,
@@ -13,6 +14,7 @@ import {
 export const linksQueryKeys = {
   all: ["links"] as const,
   user: (userId?: string) => ["links", userId || "anonymous"] as const,
+  stats: (userId?: string) => ["links", "stats", userId || "anonymous"] as const,
 };
 
 /**
@@ -24,6 +26,22 @@ export function useLinksQuery(userId?: string) {
     queryFn: () => {
       if (!userId) return [];
       return getFirebaseLinks(userId);
+    },
+    enabled: !!userId,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+  });
+}
+
+/**
+ * 특정 유저의 Firestore 링크 목록을 클릭수 많은 순(orderBy('clickCount', 'desc'))으로 조회하는 통계 쿼리 훅
+ */
+export function useLinksStatsQuery(userId?: string) {
+  return useQuery({
+    queryKey: linksQueryKeys.stats(userId),
+    queryFn: () => {
+      if (!userId) return [];
+      return getFirebaseLinksByClicks(userId);
     },
     enabled: !!userId,
     refetchOnMount: "always",
@@ -183,7 +201,11 @@ export function useClickLinkMutation(userId?: string) {
         queryKey,
         previousLinks.map((item) =>
           item.id === linkId
-            ? { ...item, click_count: (item.click_count || 0) + 1 }
+            ? {
+                ...item,
+                click_count: (item.click_count || 0) + 1,
+                clickCount: (item.clickCount ?? item.click_count ?? 0) + 1,
+              }
             : item
         )
       );
@@ -198,6 +220,7 @@ export function useClickLinkMutation(userId?: string) {
     onSettled: () => {
       if (userId) {
         queryClient.invalidateQueries({ queryKey });
+        queryClient.invalidateQueries({ queryKey: linksQueryKeys.stats(userId) });
       }
     },
   });

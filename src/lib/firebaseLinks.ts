@@ -107,6 +107,7 @@ export async function addFirebaseLink(
     is_active: newLinkData.is_active ?? true,
     sort_order: newLinkData.sort_order ?? 1,
     click_count: 0,
+    clickCount: 0,
     createdAt: serverTimestamp(),
   };
 
@@ -131,7 +132,29 @@ export async function addFirebaseLink(
     is_active: (docPayload.is_active as boolean) ?? true,
     sort_order: (docPayload.sort_order as number) ?? 1,
     click_count: 0,
+    clickCount: 0,
     createdAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Firestore 문서 스냅샷을 LinkItem으로 정규화하는 헬퍼 함수
+ */
+function mapDocToLinkItem(id: string, data: Record<string, unknown>): LinkItem {
+  const clicks = Number(data.clickCount ?? data.click_count) || 0;
+  return {
+    id,
+    title: (data.title as string) || "",
+    subtitle: (data.subtitle as string) || undefined,
+    url: (data.url as string) || "",
+    icon: (data.icon as string) || "🔗",
+    badge: (data.badge as string) || undefined,
+    is_active: (data.is_active as boolean) ?? true,
+    sort_order: (data.sort_order as number) ?? 1,
+    click_count: clicks,
+    clickCount: clicks,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
   };
 }
 
@@ -151,41 +174,15 @@ export async function getFirebaseLinks(userId: string): Promise<LinkItem[]> {
       const q = query(linksCollectionRef, orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
 
-      return snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          title: data.title || "",
-          subtitle: data.subtitle || undefined,
-          url: data.url || "",
-          icon: data.icon || "🔗",
-          badge: data.badge || undefined,
-          is_active: data.is_active ?? true,
-          sort_order: data.sort_order ?? 1,
-          click_count: Number(data.click_count) || 0,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
-        };
-      });
+      return snapshot.docs.map((docSnap) =>
+        mapDocToLinkItem(docSnap.id, docSnap.data() as Record<string, unknown>)
+      );
     } catch (error) {
       console.warn("Firestore createdAt desc 정렬 쿼리 실패, 전체 조회 fallback 시도:", error);
       const snapshot = await getDocs(linksCollectionRef);
-      const links = snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          title: data.title || "",
-          subtitle: data.subtitle || undefined,
-          url: data.url || "",
-          icon: data.icon || "🔗",
-          badge: data.badge || undefined,
-          is_active: data.is_active ?? true,
-          sort_order: data.sort_order ?? 1,
-          click_count: Number(data.click_count) || 0,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
-        };
-      });
+      const links = snapshot.docs.map((docSnap) =>
+        mapDocToLinkItem(docSnap.id, docSnap.data() as Record<string, unknown>)
+      );
 
       // 클라이언트에서 createdAt 최신순 정렬
       return links.sort((a, b) => {
@@ -202,20 +199,71 @@ export async function getFirebaseLinks(userId: string): Promise<LinkItem[]> {
 }
 
 /**
+ * Firebase Firestore (users/{userId}/links)에서 링크 목록을 클릭수 많은 순으로 불러옵니다.
+ * orderBy('clickCount', 'desc') 사용
+ */
+export async function getFirebaseLinksByClicks(userId: string): Promise<LinkItem[]> {
+  try {
+    const cleanUserId = userId && userId.trim() ? userId.trim() : "anonymous";
+    const { firestore, db } = await getFirestoreContext();
+    const { collection, getDocs, query, orderBy } = firestore;
+    const linksCollectionRef = collection(db, "users", cleanUserId, "links");
+
+    try {
+      // 1차 시도: clickCount 기준 내림차순(desc) 쿼리
+      const q = query(linksCollectionRef, orderBy("clickCount", "desc"));
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        return snapshot.docs.map((docSnap) =>
+          mapDocToLinkItem(docSnap.id, docSnap.data() as Record<string, unknown>)
+        );
+      }
+
+      // 기존 click_count 필드만 존재하는 문서가 있을 수 있으므로 fallback 확인
+      const legacySnapshot = await getDocs(
+        query(linksCollectionRef, orderBy("click_count", "desc"))
+      );
+      return legacySnapshot.docs.map((docSnap) =>
+        mapDocToLinkItem(docSnap.id, docSnap.data() as Record<string, unknown>)
+      );
+    } catch (error) {
+      console.warn("Firestore clickCount desc 정렬 쿼리 실패, 전체 조회 fallback 시도:", error);
+      const snapshot = await getDocs(linksCollectionRef);
+      const links = snapshot.docs.map((docSnap) =>
+        mapDocToLinkItem(docSnap.id, docSnap.data() as Record<string, unknown>)
+      );
+
+      // 클라이언트에서 클릭수 내림차순 정렬
+      return links.sort(
+        (a, b) => (b.clickCount ?? b.click_count ?? 0) - (a.clickCount ?? a.click_count ?? 0)
+      );
+    }
+  } catch (err) {
+    console.warn("Firestore 통계 링크 목록 로드 실패:", err);
+    return [];
+  }
+}
+
+/**
  * Firebase Firestore (users/{userId}/links/{linkId})의 클릭 카운트를 1 증가시킵니다.
  */
 export async function incrementFirebaseLinkClick(userId: string, linkId: string): Promise<void> {
   if (!linkId) return;
+  const cleanUserId = userId && userId.trim() ? userId.trim() : "anonymous";
   try {
-    const cleanUserId = userId && userId.trim() ? userId.trim() : "anonymous";
     const { firestore, db } = await getFirestoreContext();
     const { doc, updateDoc, increment } = firestore;
     const docRef = doc(db, "users", cleanUserId, "links", linkId);
     await updateDoc(docRef, {
       click_count: increment(1),
+      clickCount: increment(1),
     });
   } catch (error) {
-    console.warn("Firestore 클릭 카운트 업데이트 실패:", error);
+    console.error(
+      `Firestore 클릭 카운트 업데이트 실패 (users/${cleanUserId}/links/${linkId}):`,
+      error
+    );
     throw error;
   }
 }

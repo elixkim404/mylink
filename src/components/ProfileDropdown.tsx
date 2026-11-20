@@ -13,6 +13,7 @@ import {
   Layers,
   ShieldCheck,
   ExternalLink,
+  BarChart3,
 } from "lucide-react";
 import type { User as FirebaseUser } from "firebase/auth";
 import type { UserProfileDoc } from "../types/mylink";
@@ -220,6 +221,21 @@ export function ProfileDropdown({
               </div>
               <span className="text-[11px] text-[#8B95A1] font-normal group-hover:text-[#4E5968]">
                 프로필 & 링크 관리 &gt;
+              </span>
+            </Link>
+
+            {/* 클릭 통계 바로가기 */}
+            <Link
+              href="/stats"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center justify-between px-2.5 py-2 rounded-xl text-[13px] font-semibold text-[#333D4B] hover:bg-[#F2F4F6] transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-[#3182F6] group-hover:scale-105 transition-transform" />
+                <span>클릭 통계</span>
+              </div>
+              <span className="text-[11px] text-[#8B95A1] font-normal group-hover:text-[#4E5968]">
+                링크별 분석 &gt;
               </span>
             </Link>
 

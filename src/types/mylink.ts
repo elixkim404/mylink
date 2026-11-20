@@ -42,6 +42,7 @@ export interface LinkItem {
   is_active: boolean;
   sort_order: number;
   click_count?: number;
+  clickCount?: number;
   createdAt?: unknown;
   updatedAt?: unknown;
 }

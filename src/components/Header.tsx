@@ -11,6 +11,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useAuth, getGoogleAuthErrorMessage } from "../lib/authContext";
+import { getUserProfilePath } from "../lib/urls";
 import { Button } from "./ui/button";
 import { GoogleIcon } from "./icons/GoogleIcon";
 import { ProfileDropdown } from "./ProfileDropdown";
@@ -68,14 +69,14 @@ export function Header({
 
   const emailPrefix = (userProfile?.email || user?.email || "").split("@")[0];
   const currentHandle = userProfile?.handle || emailPrefix || "me";
-  const personalDisplayName = userProfile?.display_name || currentHandle;
+  const personalPagePath = getUserProfilePath(user?.uid);
 
   return (
     <header className="sticky top-0 z-30 w-full max-w-[430px] bg-[#F9FAFB]/95 backdrop-blur-md px-4 h-14 flex items-center justify-between border-b border-[#E5E8EB]/70">
       {/* 1. Left Brand / Personal Page Link */}
       {user ? (
         <Link
-          href={`/${encodeURIComponent(personalDisplayName)}`}
+          href={personalPagePath}
           className="flex items-center gap-1.5 text-left group cursor-pointer outline-hidden shrink-0"
           title="내 개인별 페이지로 이동"
         >
@@ -108,7 +109,7 @@ export function Header({
         ) : user ? (
           <>
             {/* 개인별 페이지 바로가기 버튼 (Primary) */}
-            <Link href={`/${encodeURIComponent(personalDisplayName)}`} title="내 개인별 페이지 보기">
+            <Link href={personalPagePath} title="내 개인별 페이지 보기">
               <Button
                 variant="primary"
                 size="sm"

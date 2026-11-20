@@ -115,7 +115,7 @@ export function UserProfileView({ userId }: UserProfileViewProps) {
     return null;
   }, [cleanUserId, currentUser, currentUserProfile]);
 
-  const searchedUser = directUser || fallbackUser || selfOrLocalUser;
+  const searchedUser = directUser || selfOrLocalUser || fallbackUser;
   const isUserLoading =
     !searchedUser && (authLoading || isDirectLoading || (shouldFallback && isFallbackLoading));
 
