@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
-const basePath = isProd ? "/mylink" : "";
+const isVercel = process.env.VERCEL === "1";
+const isGhPages = isProd && !isVercel;
+const basePath = isGhPages ? "/mylink" : "";
 
 const nextConfig: NextConfig = {
-  ...(isProd ? { output: "export" } : {}),
-  distDir: isProd ? ".next-build" : ".next",
+  ...(isGhPages ? { output: "export" } : {}),
+  distDir: isGhPages ? ".next-build" : ".next",
   basePath,
   trailingSlash: true,
   images: {
