@@ -49,6 +49,41 @@ try {
     throw new Error("out/ 디렉토리가 생성되지 않았습니다. next.config.ts의 output: 'export' 설정을 확인하세요.");
   }
 
+  // 1-1. Next.js static export에서 누락된 opengraph-image 파일을 out/으로 복사 및 메타 태그 보완
+  const nextBuildDir = path.join(projectRoot, ".next-build");
+  const baseUrl = "https://elixkim404.github.io/mylink";
+  const ogRoutes = ["", "edit", "login", "stats", "me"];
+
+  for (const route of ogRoutes) {
+    const srcOgPath = route
+      ? path.join(nextBuildDir, route, "opengraph-image")
+      : path.join(nextBuildDir, "opengraph-image");
+
+    if (!fs.existsSync(srcOgPath)) continue;
+
+    const targetDir = route ? path.join(outDir, route) : outDir;
+    fs.mkdirSync(targetDir, { recursive: true });
+
+    const destPngPath = path.join(targetDir, "opengraph-image.png");
+    fs.copyFileSync(srcOgPath, destPngPath);
+
+    const htmlPath = path.join(targetDir, "index.html");
+    if (fs.existsSync(htmlPath)) {
+      let html = fs.readFileSync(htmlPath, "utf8");
+      if (!html.includes('property="og:image"')) {
+        const ogUrl = route ? `${baseUrl}/${route}/opengraph-image.png` : `${baseUrl}/opengraph-image.png`;
+        const ogTags =
+          `<meta property="og:image" content="${ogUrl}"/>` +
+          `<meta property="og:image:width" content="1200"/>` +
+          `<meta property="og:image:height" content="630"/>` +
+          `<meta name="twitter:card" content="summary_large_image"/>` +
+          `<meta name="twitter:image" content="${ogUrl}"/>`;
+        html = html.replace("</head>", `${ogTags}</head>`);
+        fs.writeFileSync(htmlPath, html, "utf8");
+      }
+    }
+  }
+
   // 2. 기존 임시 worktree 정리 후 gh-pages 준비
   cleanWorktree();
   run("git fetch origin gh-pages");
