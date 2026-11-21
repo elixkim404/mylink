@@ -269,57 +269,78 @@ export default function LandingPage() {
 
         {/* Highlight Stats Strip */}
         <section className="py-4">
-          <Card className="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 divide-y sm:divide-y-0 sm:divide-x divide-[#F2F4F6] text-center">
-            <div className="pt-1 sm:pt-0">
-              <p className="text-[22px] sm:text-[26px] font-extrabold text-[#3182F6] tracking-tight">
-                30분
+          <div className="rounded-[28px] bg-white border border-[#E5E8EB] shadow-[0_12px_32px_rgba(25,31,40,0.05)] p-6 sm:p-7 grid grid-cols-1 sm:grid-cols-3 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-[#F2F4F6] text-center">
+            <div className="flex flex-col items-center pt-1 sm:pt-0">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#E8F3FF] text-[#3182F6] mb-2">
+                빠른 시작
+              </span>
+              <p className="text-[24px] sm:text-[28px] font-extrabold text-[#191F28] tracking-tight">
+                30분 완성
               </p>
-              <p className="text-[13px] text-[#6B7684] mt-0.5 font-medium">
+              <p className="text-[13px] text-[#6B7684] mt-1 font-medium">
                 누구나 뚝딱 완성하는 나만의 페이지
               </p>
             </div>
-            <div className="pt-4 sm:pt-0 sm:pl-6">
-              <p className="text-[22px] sm:text-[26px] font-extrabold text-[#191F28] tracking-tight">
-                실시간
+            <div className="flex flex-col items-center pt-5 sm:pt-0 sm:pl-6">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#E6F7ED] text-[#2B9D5B] mb-2">
+                실시간 분석
+              </span>
+              <p className="text-[24px] sm:text-[28px] font-extrabold text-[#191F28] tracking-tight">
+                클릭 집계
               </p>
-              <p className="text-[13px] text-[#6B7684] mt-0.5 font-medium">
-                링크 클릭 수와 방문 반응 즉시 집계
+              <p className="text-[13px] text-[#6B7684] mt-1 font-medium">
+                링크 클릭 수와 방문 반응 즉시 반영
               </p>
             </div>
-            <div className="pt-4 sm:pt-0 sm:pl-6">
-              <p className="text-[22px] sm:text-[26px] font-extrabold text-[#191F28] tracking-tight">
+            <div className="flex flex-col items-center pt-5 sm:pt-0 sm:pl-6">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#F3EEFF] text-[#7C3AED] mb-2">
+                어디서나
+              </span>
+              <p className="text-[24px] sm:text-[28px] font-extrabold text-[#191F28] tracking-tight">
                 1개의 URL
               </p>
-              <p className="text-[13px] text-[#6B7684] mt-0.5 font-medium">
+              <p className="text-[13px] text-[#6B7684] mt-1 font-medium">
                 모바일·PC 어디서나 깨짐 없는 반응형
               </p>
             </div>
-          </Card>
+          </div>
         </section>
 
         {/* Feature Cards Section (3 Cards) */}
-        <section id="features" className="py-14 sm:py-16">
-          <div className="text-center mb-8 sm:mb-10">
-            <h2 className="text-[24px] sm:text-[30px] font-extrabold text-[#191F28] tracking-tight">
+        <section id="features" className="py-14 sm:py-18">
+          <div className="text-center flex flex-col items-center mb-10">
+            <Badge
+              variant="brand"
+              className="mb-3 px-3 py-1 text-[12px] font-semibold gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>핵심 기능</span>
+            </Badge>
+            <h2 className="text-[26px] sm:text-[34px] font-extrabold text-[#191F28] tracking-tight">
               꼭 필요한 기능만 깔끔하게
             </h2>
-            <p className="mt-2 text-[14px] sm:text-[15px] text-[#6B7684]">
-              링크 모음부터 클릭 분석, 공유까지 마이링크 하나로 충분해요.
+            <p className="mt-2.5 text-[14px] sm:text-[16px] text-[#6B7684] max-w-md">
+              링크 모음부터 클릭 분석, 개인 url 공유까지 마이링크 하나로 충분해요.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {FEATURES.map((feature) => (
               <Card
                 key={feature.title}
-                className="p-6 flex flex-col gap-3.5 hover:border-[#D1D6DB] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(25,31,40,0.06)] transition-all duration-200"
+                className="rounded-[28px] bg-white border border-[#E5E8EB] shadow-[0_12px_32px_rgba(25,31,40,0.05)] p-6 flex flex-col gap-3.5 hover:border-[#3182F6]/40 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(25,31,40,0.08)] transition-all duration-200"
               >
-                <div
-                  className={`w-11 h-11 rounded-xl ${feature.accentBg} flex items-center justify-center`}
-                >
-                  {feature.icon}
+                <div className="flex items-center justify-between">
+                  <div
+                    className={`w-11 h-11 rounded-2xl ${feature.accentBg} flex items-center justify-center`}
+                  >
+                    {feature.icon}
+                  </div>
+                  <span className="text-[11px] font-semibold text-[#8B95A1] bg-[#F2F4F6] px-2.5 py-1 rounded-full">
+                    MyLink
+                  </span>
                 </div>
-                <h3 className="text-[18px] font-bold text-[#191F28] tracking-tight">
+                <h3 className="text-[19px] font-bold text-[#191F28] tracking-tight mt-1">
                   {feature.title}
                 </h3>
                 <p className="text-[14px] text-[#6B7684] leading-relaxed">
@@ -332,59 +353,73 @@ export default function LandingPage() {
         </section>
 
         {/* How It Works Section (3 Steps) */}
-        <section id="how-it-works" className="pb-16">
-          <div className="text-center mb-8">
-            <h2 className="text-[22px] sm:text-[26px] font-extrabold text-[#191F28] tracking-tight">
+        <section id="how-it-works" className="pb-16 sm:pb-20">
+          <div className="text-center flex flex-col items-center mb-10">
+            <Badge
+              variant="brand"
+              className="mb-3 px-3 py-1 text-[12px] font-semibold gap-1.5"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>이용 방법</span>
+            </Badge>
+            <h2 className="text-[26px] sm:text-[32px] font-extrabold text-[#191F28] tracking-tight">
               이렇게 시작해 보세요
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {STEPS.map((item) => (
               <div
                 key={item.step}
-                className="rounded-2xl bg-white border border-[#E5E8EB] p-5 flex items-start gap-3.5"
+                className="rounded-[28px] bg-white border border-[#E5E8EB] shadow-[0_12px_32px_rgba(25,31,40,0.05)] p-6 flex flex-col gap-3 hover:border-[#3182F6]/40 hover:-translate-y-0.5 transition-all duration-200"
               >
-                <span className="w-8 h-8 rounded-xl bg-[#E8F3FF] text-[#3182F6] font-extrabold text-[13px] flex items-center justify-center shrink-0">
-                  {item.step}
-                </span>
-                <div>
-                  <h3 className="text-[15px] font-bold text-[#191F28]">
-                    {item.title}
-                  </h3>
-                  <p className="text-[13px] text-[#6B7684] mt-1 leading-relaxed">
-                    {item.description}
-                  </p>
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-[#E8F3FF] text-[#3182F6] font-extrabold text-[12px]">
+                    STEP {item.step}
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-[#3182F6]/40" />
                 </div>
+                <h3 className="text-[17px] font-bold text-[#191F28] tracking-tight">
+                  {item.title}
+                </h3>
+                <p className="text-[14px] text-[#6B7684] leading-relaxed">
+                  {item.description}
+                </p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Bottom CTA Banner */}
-        <section className="pb-16">
-          <div className="rounded-3xl bg-linear-to-r from-[#3182F6] to-[#1B64DA] p-7 sm:p-10 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left relative overflow-hidden">
-            <div className="relative z-10">
-              <h2 className="text-[22px] sm:text-[26px] font-extrabold tracking-tight">
-                지금 바로 나만의 링크 페이지를 만들어 보세요
+        <section className="pb-20">
+          <div className="rounded-[28px] bg-white border border-[#E5E8EB] shadow-[0_16px_40px_rgba(25,31,40,0.07)] p-7 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left relative overflow-hidden">
+            <div className="relative z-10 flex flex-col items-center sm:items-start">
+              <Badge
+                variant="brand"
+                className="mb-3 px-3 py-1 text-[12px] font-semibold gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>지금 바로 시작하기</span>
+              </Badge>
+              <h2 className="text-[22px] sm:text-[28px] font-extrabold text-[#191F28] tracking-tight">
+                나만의 링크 페이지를 만들어 보세요
               </h2>
-              <p className="mt-1.5 text-[14px] sm:text-[15px] text-white/85">
-                로그인 후 30분 안에 멋진 퍼블릭 프로필을 완성할 수 있어요.
+              <p className="mt-1.5 text-[14px] sm:text-[15px] text-[#6B7684]">
+                Google 로그인 후 30분 안에 멋진 퍼블릭 프로필을 완성할 수 있어요.
               </p>
             </div>
 
             <Link href="/login" className="relative z-10 shrink-0 w-full sm:w-auto">
               <Button
-                variant="outline"
                 size="xl"
-                className="w-full sm:w-auto bg-white text-[#3182F6] hover:bg-[#F2F4F6] border-0 font-bold px-7"
+                className="w-full sm:w-auto px-8 shadow-sm"
               >
                 <span>시작하기</span>
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
 
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-14 -right-14 w-44 h-44 rounded-full bg-[#E8F3FF] blur-2xl pointer-events-none" />
           </div>
         </section>
       </main>
